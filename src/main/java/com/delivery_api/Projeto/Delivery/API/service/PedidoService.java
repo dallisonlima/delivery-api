@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -39,17 +40,30 @@ public class PedidoService {
         pedido.setDataPedido(LocalDateTime.now());
         pedido.setStatus(StatusPedido.PENDENTE);
 
-        BigDecimal valorTotal = calcularValorTotal(pedido.getItens());
-        pedido.setValorTotal(valorTotal.add(restaurante.getTaxaEntrega()));
+        BigDecimal valorTotalItens = BigDecimal.ZERO;
+        StringBuilder descricaoItens = new StringBuilder();
 
-        return pedidoRepository.save(pedido);
-    }
+        for (ItemPedido item : pedido.getItens()) {
+            Produto produto = produtoRepository.findById(item.getProduto().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + item.getProduto().getId()));
 
-    public Pedido alterarStatus(Long pedidoId, StatusPedido novoStatus) {
-        Pedido pedido = pedidoRepository.findByIdWithItens(pedidoId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + pedidoId));
+            if (!produto.getDisponivel()) {
+                throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
+            }
 
-        pedido.setStatus(novoStatus);
+            item.setPedido(pedido);
+            item.setPrecoUnitario(produto.getPreco());
+            valorTotalItens = valorTotalItens.add(produto.getPreco().multiply(new BigDecimal(item.getQuantidade())));
+
+            if (descricaoItens.length() > 0) {
+                descricaoItens.append(", ");
+            }
+            descricaoItens.append(produto.getNome()).append(" (").append(item.getQuantidade()).append("x)");
+        }
+
+        pedido.setItensDescricao(descricaoItens.toString());
+        pedido.setValorTotal(valorTotalItens.add(restaurante.getTaxaEntrega()));
+
         return pedidoRepository.save(pedido);
     }
 
@@ -71,19 +85,5 @@ public class PedidoService {
         if (pedido.getItens() == null || pedido.getItens().isEmpty()) {
             throw new IllegalArgumentException("O pedido deve conter pelo menos um item.");
         }
-    }
-
-    private BigDecimal calcularValorTotal(List<ItemPedido> itens) {
-        return itens.stream()
-                .map(item -> {
-                    Produto produto = produtoRepository.findById(item.getProduto().getId())
-                            .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + item.getProduto().getId()));
-                    if (!produto.getDisponivel()) {
-                        throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
-                    }
-                    item.setPrecoUnitario(produto.getPreco());
-                    return produto.getPreco().multiply(new BigDecimal(item.getQuantidade()));
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

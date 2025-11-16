@@ -29,4 +29,6 @@ public class Restaurante {
     private String endereco;
 
     private Double avaliacao;
+
+    private String telefone;
 }

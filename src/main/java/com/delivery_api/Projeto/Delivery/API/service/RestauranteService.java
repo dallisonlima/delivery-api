@@ -34,6 +34,7 @@ public class RestauranteService {
         restaurante.setCategoria(restauranteAtualizado.getCategoria());
         restaurante.setEndereco(restauranteAtualizado.getEndereco());
         restaurante.setAvaliacao(restauranteAtualizado.getAvaliacao());
+        restaurante.setTelefone(restauranteAtualizado.getTelefone());
 
         return restauranteRepository.save(restaurante);
     }
@@ -66,6 +67,9 @@ public class RestauranteService {
         }
         if (!StringUtils.hasText(restaurante.getCategoria())) {
             throw new IllegalArgumentException("A categoria do restaurante é obrigatória.");
+        }
+        if (!StringUtils.hasText(restaurante.getTelefone())) {
+            throw new IllegalArgumentException("O telefone do restaurante é obrigatório.");
         }
     }
 }

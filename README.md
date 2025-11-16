@@ -27,16 +27,26 @@ Sistema de delivery desenvolvido com Spring Boot e Java 21.
 
 ## 📋 Endpoints Principais
 
-- `GET /health` - Status da aplicação (inclui versão Java)
-- `GET /info` - Informações da aplicação
-- `GET /h2-console` - Console do banco H2
+- `GET /health` - Status da aplicação.
+- `GET /info` - Informações da aplicação.
+- `GET /h2-console` - Console do banco de dados H2.
+
+### Clientes
 - `POST /clientes` - Cadastra um novo cliente.
+- `GET /clientes` - Lista todos os clientes ativos.
 - `GET /clientes/{id}` - Busca um cliente por ID.
-- `POST /restaurantes` - Cadastra um novo restaurante.
-- `GET /restaurantes` - Lista os restaurantes.
-- `POST /pedidos` - Cria um novo pedido.
+- `PUT /clientes/{id}` - Atualiza os dados de um cliente.
+- `DELETE /clientes/{id}` - Inativa um cliente (soft delete).
 - `GET /clientes/{id}/pedidos` - Lista os pedidos de um cliente específico.
-- `PATCH /clientes/{clienteId}/pedidos/{pedidoId}/status` - Atualiza o status de um pedido.
+
+### Restaurantes
+- `POST /restaurantes` - Cadastra um novo restaurante.
+- `GET /restaurantes` - Lista todos os restaurantes.
+- `GET /restaurantes/{id}` - Busca um restaurante por ID.
+
+### Pedidos
+- `POST /pedidos` - Cria um novo pedido.
+- `PATCH /clientes/{clienteId}/pedidos/{pedidoId}/status` - Atualiza o status de um pedido de um cliente.
 
 ## 🧪 Testando a API com Insomnia
 
@@ -79,7 +89,8 @@ Para facilitar os testes dos endpoints, uma collection do Insomnia está dispon�
     "categoria": "Pizza",
     "ativo": true,
     "endereco": "Avenida Principal, 456",
-    "avaliacao": 4.7
+    "avaliacao": 4.7,
+    "telefone": "1123456789"
 }
 ```
 
@@ -114,7 +125,7 @@ Para facilitar os testes dos endpoints, uma collection do Insomnia está dispon�
 ## 🔧 Configuração
 
 - Porta: 8080
-- Banco: H2 em memória
+- Banco: H2 em memória (`spring.jpa.hibernate.ddl-auto=update`)
 - Profile: development
 
 ## 👨‍💻 Desenvolvedor

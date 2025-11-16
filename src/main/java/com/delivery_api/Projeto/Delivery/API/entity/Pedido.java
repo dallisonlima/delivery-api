@@ -1,5 +1,6 @@
 package com.delivery_api.Projeto.Delivery.API.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,9 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<ItemPedido> itens;
+
+    @Column(name = "ITENS")
+    private String itensDescricao;
 
     @Column(name = "valor_total")
     private BigDecimal valorTotal;

@@ -208,7 +208,7 @@
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n\t\"nome\": \"Sabor Brasileiro\",\n\t\"taxaEntrega\": 10.50,\n\t\"categoria\": \"Brasileira\",\n\t\"ativo\": true,\n\t\"endereco\": \"Rua Principal, 789\",\n\t\"avaliacao\": 4.5\n}"
+        "text": "{\n\t\"nome\": \"Sabor Brasileiro\",\n\t\"taxaEntrega\": 10.50,\n\t\"categoria\": \"Brasileira\",\n\t\"ativo\": true,\n\t\"endereco\": \"Rua Principal, 789\",\n\t\"avaliacao\": 4.5,\n\t\"telefone\": \"11987654321\"\n}"
       },
       "parameters": [],
       "headers": [{"name": "Content-Type", "value": "application/json"}],

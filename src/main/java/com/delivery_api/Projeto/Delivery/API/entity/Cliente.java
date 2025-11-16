@@ -35,5 +35,10 @@ public class Cliente {
         this.ativo = false;
     }
 
-
+    @PrePersist
+    private void setDataCadastro() {
+        if (dataCadastro == null) {
+            this.dataCadastro = LocalDateTime.now();
+        }
+    }
 }

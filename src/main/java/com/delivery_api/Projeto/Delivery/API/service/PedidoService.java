@@ -46,10 +46,17 @@ public class PedidoService {
     }
 
     public Pedido alterarStatus(Long pedidoId, StatusPedido novoStatus) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
+        Pedido pedido = pedidoRepository.findByIdWithItens(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + pedidoId));
 
-        // Adicionar lógica de transição de status se necessário
+        pedido.setStatus(novoStatus);
+        return pedidoRepository.save(pedido);
+    }
+
+    public Pedido alterarStatusParaCliente(Long clienteId, Long pedidoId, StatusPedido novoStatus) {
+        Pedido pedido = pedidoRepository.findByIdAndClienteIdWithItens(pedidoId, clienteId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado para este cliente."));
+
         pedido.setStatus(novoStatus);
         return pedidoRepository.save(pedido);
     }

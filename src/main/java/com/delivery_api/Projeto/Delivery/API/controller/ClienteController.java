@@ -1,7 +1,11 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
+import com.delivery_api.Projeto.Delivery.API.entity.Pedido;
+import com.delivery_api.Projeto.Delivery.API.entity.StatusPedido;
+import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
 import com.delivery_api.Projeto.Delivery.API.service.ClienteService;
+import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,12 @@ public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
+
+    @Autowired
+    private PedidoService pedidoService;
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
     @PostMapping
     public ResponseEntity<Cliente> cadastrar(@Validated @RequestBody Cliente cliente) {
@@ -48,15 +58,17 @@ public class ClienteController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/buscar")
-    public ResponseEntity<List<Cliente>> buscarPorNome(@RequestParam String nome) {
-        return ResponseEntity.ok(clienteService.buscarPorNome(nome));
+    @GetMapping("/{clienteId}/pedidos")
+    public ResponseEntity<List<Pedido>> buscarPedidosPorCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(pedidoRepository.findByClienteId(clienteId));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<Cliente> buscarPorEmail(@PathVariable String email) {
-        return clienteService.buscarPorEmail(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @PatchMapping("/{clienteId}/pedidos/{pedidoId}/status")
+    public ResponseEntity<Pedido> atualizarStatusPedido(
+            @PathVariable Long clienteId,
+            @PathVariable Long pedidoId,
+            @RequestParam StatusPedido status) {
+        Pedido pedidoAtualizado = pedidoService.alterarStatusParaCliente(clienteId, pedidoId, status);
+        return ResponseEntity.ok(pedidoAtualizado);
     }
 }

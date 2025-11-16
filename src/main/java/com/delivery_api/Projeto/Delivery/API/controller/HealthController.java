@@ -14,7 +14,8 @@ public class HealthController {
         return Map.of(
                 "status", "UP",
                 "timestamp", LocalDateTime.now().toString(),
-                "Service", "Delevery API"
+                "Service", "Delevery API",
+                "version", "1.0.0"
         );
     }
 }

@@ -280,13 +280,13 @@
       "parentId": "fld_produtos",
       "modified": 1698399600000,
       "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/produtos/restaurante/1",
+      "url": "{{ _.baseUrl }}/produtos",
       "name": "Cadastrar Produto",
       "description": "",
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n\t\"nome\": \"Feijoada Completa\",\n\t\"descricao\": \"Acompanha arroz, couve e farofa\",\n\t\"preco\": 45.00,\n\t\"categoria\": \"Prato Principal\",\n\t\"disponivel\": true\n}"
+        "text": "{\n\t\"nome\": \"Feijoada Completa\",\n\t\"descricao\": \"Acompanha arroz, couve e farofa\",\n\t\"preco\": 45.00,\n\t\"categoria\": \"Prato Principal\",\n\t\"disponivel\": true,\n\t\"restauranteId\": 1\n}"
       },
       "parameters": [],
       "headers": [{"name": "Content-Type", "value": "application/json"}],

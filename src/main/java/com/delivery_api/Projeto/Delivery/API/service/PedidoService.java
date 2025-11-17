@@ -34,9 +34,9 @@ public class PedidoService {
     private ProdutoRepository produtoRepository;
 
     public PedidoResponseDTO criar(PedidoRequestDTO pedidoDTO) {
-        Cliente cliente = clienteRepository.findById(pedidoDTO.getClienteId())
+        Cliente cliente = clienteRepository.findById(pedidoDTO.getCliente().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado."));
-        Restaurante restaurante = restauranteRepository.findById(pedidoDTO.getRestauranteId())
+        Restaurante restaurante = restauranteRepository.findById(pedidoDTO.getRestaurante().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado."));
 
         Pedido pedido = new Pedido();
@@ -51,8 +51,8 @@ public class PedidoService {
         List<ItemPedido> itensDoPedido = new ArrayList<>();
 
         for (ItemPedidoRequestDTO itemDTO : pedidoDTO.getItens()) {
-            Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProdutoId()));
+            Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProduto().getId()));
 
             if (!produto.getDisponivel()) {
                 throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
@@ -112,7 +112,7 @@ public class PedidoService {
 
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId) {
-        return pedidoRepository.findByClienteId(clienteId).stream()
+        return pedidoRepository.findByClienteIdWithItens(clienteId).stream()
                 .map(this::toPedidoResponseDTO)
                 .collect(Collectors.toList());
     }

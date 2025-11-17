@@ -17,6 +17,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     List<Pedido> findByClienteId(Long clienteId);
 
+    @Query("SELECT p FROM Pedido p LEFT JOIN FETCH p.itens WHERE p.cliente.id = :clienteId")
+    List<Pedido> findByClienteIdWithItens(@Param("clienteId") Long clienteId);
+
     List<Pedido> findByStatus(StatusPedido status);
 
     List<Pedido> findTop10ByOrderByDataPedidoDesc();
@@ -29,9 +32,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Query("SELECT p.restaurante.nome, SUM(p.valorTotal) FROM Pedido p GROUP BY p.restaurante.nome")
     List<Object[]> findTotalVendasPorRestaurante();
 
-    @Query("SELECT p FROM Pedido p WHERE p.valorTotal > :valor")
-    List<Pedido> findByValorTotalGreaterThan(@Param("valor") BigDecimal valor);
+    List<Pedido> findByValorTotalGreaterThan(BigDecimal valor);
 
-    @Query("SELECT p FROM Pedido p WHERE p.dataPedido BETWEEN :inicio AND :fim AND p.status = :status")
-    List<Pedido> findByDataPedidoBetweenAndStatus(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim, @Param("status") StatusPedido status);
+    List<Pedido> findByDataPedidoBetweenAndStatus(LocalDateTime inicio, LocalDateTime fim, StatusPedido status);
 }

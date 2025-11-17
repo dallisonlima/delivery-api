@@ -206,11 +206,14 @@
       "modified": 1698399600000,
       "created": 1698399600000,
       "url": "{{ _.baseUrl }}/api/restaurantes",
-      "name": "Listar Restaurantes",
-      "description": "",
+      "name": "Listar Restaurantes (com filtros)",
+      "description": "Você pode filtrar por 'categoria' e 'ativo'.\nExemplo: {{ _.baseUrl }}/api/restaurantes?categoria=Brasileira&ativo=true",
       "method": "GET",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {"name": "categoria", "value": "Brasileira", "disabled": false},
+        {"name": "ativo", "value": "true", "disabled": false}
+      ],
       "headers": [],
       "authentication": {},
       "metaSortKey": -90,
@@ -284,35 +287,21 @@
       "_type": "request"
     },
     {
-      "_id": "req_patch_restaurante_ativar",
+      "_id": "req_patch_restaurante_status",
       "parentId": "fld_restaurantes",
       "modified": 1698399600000,
       "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/restaurantes/1/ativar",
-      "name": "Ativar Restaurante",
-      "description": "",
+      "url": "{{ _.baseUrl }}/api/restaurantes/1/status",
+      "name": "Ativar/Desativar Restaurante",
+      "description": "Alterne o valor do parâmetro 'ativo' para 'true' ou 'false' para ativar ou desativar o restaurante.",
       "method": "PATCH",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {"name": "ativo", "value": "true"}
+      ],
       "headers": [],
       "authentication": {},
       "metaSortKey": -70,
-      "_type": "request"
-    },
-    {
-      "_id": "req_patch_restaurante_inativar",
-      "parentId": "fld_restaurantes",
-      "modified": 1698399600000,
-      "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/restaurantes/1/inativar",
-      "name": "Inativar Restaurante",
-      "description": "",
-      "method": "PATCH",
-      "body": {},
-      "parameters": [],
-      "headers": [],
-      "authentication": {},
-      "metaSortKey": -68,
       "_type": "request"
     },
     {
@@ -320,7 +309,7 @@
       "parentId": "fld_restaurantes",
       "modified": 1698399600000,
       "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/restaurantes/1/taxa-entrega?cep=12345-678",
+      "url": "{{ _.baseUrl }}/api/restaurantes/1/taxa-entrega/12345-678",
       "name": "Calcular Taxa de Entrega",
       "description": "",
       "method": "GET",
@@ -329,6 +318,22 @@
       "headers": [],
       "authentication": {},
       "metaSortKey": -65,
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_restaurantes_proximos",
+      "parentId": "fld_restaurantes",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/api/restaurantes/proximos/12345-678",
+      "name": "Buscar Restaurantes Próximos",
+      "description": "Busca restaurantes próximos com base no CEP fornecido.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -60,
       "_type": "request"
     },
     {

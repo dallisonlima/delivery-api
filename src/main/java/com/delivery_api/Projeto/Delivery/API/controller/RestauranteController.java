@@ -28,8 +28,10 @@ public class RestauranteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RestauranteResponseDTO>> listar() {
-        return ResponseEntity.ok(restauranteService.listarTodos());
+    public ResponseEntity<List<RestauranteResponseDTO>> listar(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) Boolean ativo) {
+        return ResponseEntity.ok(restauranteService.listar(categoria, ativo));
     }
 
     @GetMapping("/disponiveis")
@@ -68,8 +70,8 @@ public class RestauranteController {
         return ResponseEntity.ok(restauranteService.buscarPorCategoria(categoria));
     }
 
-    @GetMapping("/{restauranteId}/taxa-entrega")
-    public ResponseEntity<BigDecimal> calcularTaxaEntrega(@PathVariable Long restauranteId, @RequestParam(required = false) String cep) {
+    @GetMapping("/{restauranteId}/taxa-entrega/{cep}")
+    public ResponseEntity<BigDecimal> calcularTaxaEntrega(@PathVariable Long restauranteId, @PathVariable String cep) {
         try {
             BigDecimal taxa = restauranteService.calcularTaxaEntrega(restauranteId, cep);
             return ResponseEntity.ok(taxa);
@@ -78,15 +80,19 @@ public class RestauranteController {
         }
     }
 
-    @PatchMapping("/{id}/ativar")
-    public ResponseEntity<Void> ativar(@PathVariable Long id) {
-        restauranteService.ativar(id);
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> ativarOuDesativar(@PathVariable Long id, @RequestParam boolean ativo) {
+        if (ativo) {
+            restauranteService.ativar(id);
+        } else {
+            restauranteService.inativar(id);
+        }
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/inativar")
-    public ResponseEntity<Void> inativar(@PathVariable Long id) {
-        restauranteService.inativar(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/proximos/{cep}")
+    public ResponseEntity<List<RestauranteResponseDTO>> buscarProximos(@PathVariable String cep) {
+        // TODO: Implementar a busca por restaurantes próximos
+        return ResponseEntity.ok(List.of());
     }
 }

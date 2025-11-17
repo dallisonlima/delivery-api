@@ -4,11 +4,14 @@ import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
+import com.delivery_api.Projeto.Delivery.API.repository.RestauranteSpecs;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -71,8 +74,15 @@ public class RestauranteService {
     }
 
     @Transactional(readOnly = true)
-    public List<RestauranteResponseDTO> listarTodos() {
-        return restauranteRepository.findAll().stream()
+    public List<RestauranteResponseDTO> listar(String categoria, Boolean ativo) {
+        Specification<Restaurante> spec = Specification.where(null);
+        if (StringUtils.hasText(categoria)) {
+            spec = spec.and(RestauranteSpecs.comCategoria(categoria));
+        }
+        if (ativo != null) {
+            spec = spec.and(RestauranteSpecs.comAtivo(ativo));
+        }
+        return restauranteRepository.findAll(spec).stream()
                 .map(this::toRestauranteResponseDTO)
                 .collect(Collectors.toList());
     }

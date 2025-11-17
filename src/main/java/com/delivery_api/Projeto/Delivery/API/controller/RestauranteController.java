@@ -1,8 +1,10 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
+import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;
 import com.delivery_api.Projeto.Delivery.API.service.RestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class RestauranteController {
 
     @Autowired
     private ProdutoService produtoService;
+
+    @Autowired
+    private PedidoService pedidoService;
 
     @PostMapping
     public ResponseEntity<RestauranteResponseDTO> cadastrar(@Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
@@ -104,5 +109,10 @@ public class RestauranteController {
     @GetMapping("/{restauranteId}/produtos")
     public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutosPorRestaurante(@PathVariable Long restauranteId) {
         return ResponseEntity.ok(produtoService.buscarProdutosPorRestaurante(restauranteId));
+    }
+
+    @GetMapping("/{restauranteId}/pedidos")
+    public ResponseEntity<List<PedidoResponseDTO>> buscarPedidosPorRestaurante(@PathVariable Long restauranteId) {
+        return ResponseEntity.ok(pedidoService.buscarPedidosPorRestaurante(restauranteId));
     }
 }

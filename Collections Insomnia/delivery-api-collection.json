@@ -160,7 +160,7 @@
       "modified": 1698399600000,
       "created": 1698399600000,
       "url": "{{ _.baseUrl }}/api/clientes/1/pedidos",
-      "name": "Buscar Pedidos por Cliente",
+      "name": "Histórico de Pedidos do Cliente",
       "description": "",
       "method": "GET",
       "body": {},
@@ -353,6 +353,22 @@
       "_type": "request"
     },
     {
+      "_id": "req_get_pedidos_restaurante",
+      "parentId": "fld_restaurantes",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/api/restaurantes/1/pedidos",
+      "name": "Pedidos do Restaurante",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -52,
+      "_type": "request"
+    },
+    {
       "_id": "req_delete_restaurante",
       "parentId": "fld_restaurantes",
       "modified": 1698399600000,
@@ -530,6 +546,25 @@
       "_type": "request"
     },
     {
+      "_id": "req_get_pedidos",
+      "parentId": "fld_pedidos",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/api/pedidos",
+      "name": "Listar Pedidos (com filtros)",
+      "description": "Filtre por 'status' (PENDENTE, CONFIRMADO, etc.) e 'data' (YYYY-MM-DD).",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {"name": "status", "value": "PENDENTE", "disabled": false},
+        {"name": "data", "value": "2023-10-27", "disabled": false}
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -98,
+      "_type": "request"
+    },
+    {
       "_id": "req_get_pedido_id",
       "parentId": "fld_pedidos",
       "modified": 1698399600000,
@@ -546,51 +581,40 @@
       "_type": "request"
     },
     {
-      "_id": "req_get_pedidos_cliente_id",
-      "parentId": "fld_pedidos",
-      "modified": 1698399600000,
-      "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/pedidos/cliente/1",
-      "name": "Buscar Pedidos por Cliente ID",
-      "description": "",
-      "method": "GET",
-      "body": {},
-      "parameters": [],
-      "headers": [],
-      "authentication": {},
-      "metaSortKey": -90,
-      "_type": "request"
-    },
-    {
       "_id": "req_patch_pedido_status_update",
       "parentId": "fld_pedidos",
       "modified": 1698399600000,
       "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/pedidos/1/status?status=CONFIRMADO",
+      "url": "{{ _.baseUrl }}/api/pedidos/1/status",
       "name": "Atualizar Status do Pedido",
       "description": "",
       "method": "PATCH",
       "body": {},
-      "parameters": [],
+      "parameters": [
+        {"name": "status", "value": "CONFIRMADO"}
+      ],
       "headers": [],
       "authentication": {},
       "metaSortKey": -85,
       "_type": "request"
     },
     {
-      "_id": "req_patch_pedido_cancelar",
+      "_id": "req_post_pedido_calcular",
       "parentId": "fld_pedidos",
       "modified": 1698399600000,
       "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/pedidos/1/cancelar",
-      "name": "Cancelar Pedido",
-      "description": "",
-      "method": "PATCH",
-      "body": {},
+      "url": "{{ _.baseUrl }}/api/pedidos/calcular",
+      "name": "Calcular Total do Pedido",
+      "description": "Calcula o valor total de um pedido (incluindo taxa de entrega) sem salvá-lo.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"restaurante\": { \"id\": 1 },\n\t\"itens\": [\n\t\t{\n\t\t\t\"produto\": { \"id\": 1 },\n\t\t\t\"quantidade\": 2\n\t\t}\n\t]\n}"
+      },
       "parameters": [],
-      "headers": [],
+      "headers": [{"name": "Content-Type", "value": "application/json"}],
       "authentication": {},
-      "metaSortKey": -80,
+      "metaSortKey": -82,
       "_type": "request"
     },
     {
@@ -599,8 +623,8 @@
       "modified": 1698399600000,
       "created": 1698399600000,
       "url": "{{ _.baseUrl }}/api/pedidos/1",
-      "name": "Deletar Pedido",
-      "description": "",
+      "name": "Cancelar Pedido",
+      "description": "Altera o status do pedido para CANCELADO.",
       "method": "DELETE",
       "body": {},
       "parameters": [],

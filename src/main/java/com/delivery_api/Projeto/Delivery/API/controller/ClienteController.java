@@ -3,7 +3,6 @@ package com.delivery_api.Projeto.Delivery.API.controller;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
-import com.delivery_api.Projeto.Delivery.API.entity.Pedido;
 import com.delivery_api.Projeto.Delivery.API.entity.StatusPedido;
 import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
 import com.delivery_api.Projeto.Delivery.API.service.ClienteService;
@@ -63,14 +62,5 @@ public class ClienteController {
     @GetMapping("/{clienteId}/pedidos")
     public ResponseEntity<List<PedidoResponseDTO>> buscarPedidosPorCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(pedidoService.buscarPedidosPorCliente(clienteId));
-    }
-
-    @PatchMapping("/{clienteId}/pedidos/{pedidoId}/status")
-    public ResponseEntity<PedidoResponseDTO> atualizarStatusPedido(
-            @PathVariable Long clienteId,
-            @PathVariable Long pedidoId,
-            @RequestParam StatusPedido status) {
-        PedidoResponseDTO pedidoAtualizado = pedidoService.alterarStatusParaCliente(clienteId, pedidoId, status);
-        return ResponseEntity.ok(pedidoAtualizado);
     }
 }

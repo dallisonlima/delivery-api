@@ -4,6 +4,7 @@ import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException; // Importar a exceção
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -49,12 +50,16 @@ public class ProdutoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<String> deletar(@PathVariable Long id) { // Alterado o tipo de retorno para String
         try {
             produtoService.deletar(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        } catch (DataIntegrityViolationException e) {
+            // Retorna 409 Conflict ou 400 Bad Request com uma mensagem explicativa
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Não é possível deletar o produto pois ele está associado a pedidos. Considere alterar sua disponibilidade.");
         }
     }
 

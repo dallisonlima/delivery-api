@@ -46,7 +46,6 @@ public class PedidoService {
         pedido.setStatus(StatusPedido.PENDENTE);
         pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
 
-        BigDecimal valorTotalItens = BigDecimal.ZERO;
         StringBuilder descricaoItens = new StringBuilder();
         List<ItemPedido> itensDoPedido = new ArrayList<>();
 
@@ -65,8 +64,6 @@ public class PedidoService {
             itemPedido.setPrecoUnitario(produto.getPreco());
             itensDoPedido.add(itemPedido);
 
-            valorTotalItens = valorTotalItens.add(produto.getPreco().multiply(new BigDecimal(itemDTO.getQuantidade())));
-
             if (descricaoItens.length() > 0) {
                 descricaoItens.append(", ");
             }
@@ -75,7 +72,8 @@ public class PedidoService {
 
         pedido.setItens(itensDoPedido);
         pedido.setItensDescricao(descricaoItens.toString());
-        pedido.setValorTotal(valorTotalItens.add(restaurante.getTaxaEntrega()));
+        // Utiliza o método calcularTotalPedido para definir o valor total
+        pedido.setValorTotal(calcularTotalPedido(pedidoDTO.getRestaurante().getId(), pedidoDTO.getItens()));
 
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         return toPedidoResponseDTO(pedidoSalvo);
@@ -84,18 +82,28 @@ public class PedidoService {
     public PedidoResponseDTO alterarStatus(Long pedidoId, StatusPedido novoStatus) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
+
+        if (!isValidTransition(pedido.getStatus(), novoStatus)) {
+            throw new IllegalArgumentException("Transição de status inválida de " + pedido.getStatus() + " para " + novoStatus);
+        }
+
         pedido.setStatus(novoStatus);
         Pedido pedidoAtualizado = pedidoRepository.save(pedido);
         return toPedidoResponseDTO(pedidoAtualizado);
     }
 
-    public PedidoResponseDTO alterarStatusParaCliente(Long clienteId, Long pedidoId, StatusPedido novoStatus) {
-        Pedido pedido = pedidoRepository.findByIdAndClienteIdWithItens(pedidoId, clienteId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado para este cliente."));
+    public PedidoResponseDTO cancelarPedido(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
 
-        pedido.setStatus(novoStatus);
-        Pedido pedidoAtualizado = pedidoRepository.save(pedido);
-        return toPedidoResponseDTO(pedidoAtualizado);
+        // Valida se o status atual permite o cancelamento
+        if (pedido.getStatus() == StatusPedido.ENTREGUE || pedido.getStatus() == StatusPedido.CANCELADO) {
+            throw new IllegalArgumentException("Não é possível cancelar um pedido com status " + pedido.getStatus());
+        }
+
+        pedido.setStatus(StatusPedido.CANCELADO);
+        Pedido pedidoCancelado = pedidoRepository.save(pedido);
+        return toPedidoResponseDTO(pedidoCancelado);
     }
 
     public void deletar(Long id) {
@@ -115,6 +123,42 @@ public class PedidoService {
         return pedidoRepository.findByClienteIdWithItens(clienteId).stream()
                 .map(this::toPedidoResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal calcularTotalPedido(Long restauranteId, List<ItemPedidoRequestDTO> itensDTO) {
+        Restaurante restaurante = restauranteRepository.findById(restauranteId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restauranteId));
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (ItemPedidoRequestDTO itemDTO : itensDTO) {
+            Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProduto().getId()));
+
+            if (!produto.getDisponivel()) {
+                throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
+            }
+            total = total.add(produto.getPreco().multiply(new BigDecimal(itemDTO.getQuantidade())));
+        }
+        return total.add(restaurante.getTaxaEntrega());
+    }
+
+    private boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {
+        switch (currentStatus) {
+            case PENDENTE:
+                return newStatus == StatusPedido.CONFIRMADO || newStatus == StatusPedido.CANCELADO;
+            case CONFIRMADO:
+                return newStatus == StatusPedido.EM_PREPARO || newStatus == StatusPedido.CANCELADO; // Corrigido EM_PREPARACAO para EM_PREPARO
+            case EM_PREPARO: // Corrigido EM_PREPARACAO para EM_PREPARO
+                return newStatus == StatusPedido.SAIU_PARA_ENTREGA; // Corrigido EM_ROTA_DE_ENTREGA para SAIU_PARA_ENTREGA
+            case SAIU_PARA_ENTREGA: // Corrigido EM_ROTA_DE_ENTREGA para SAIU_PARA_ENTREGA
+                return newStatus == StatusPedido.ENTREGUE;
+            case ENTREGUE:
+            case CANCELADO:
+                return false; // Estados finais, não permitem transições
+            default:
+                return false;
+        }
     }
 
     private PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
@@ -140,8 +184,8 @@ public class PedidoService {
         dto.setProdutoId(itemPedido.getProduto().getId());
         dto.setProdutoNome(itemPedido.getProduto().getNome());
         dto.setQuantidade(itemPedido.getQuantidade());
-        dto.setPrecoUnitario(itemPedido.getPrecoUnitario());
-        dto.setSubtotal(itemPedido.getPrecoUnitario().multiply(new BigDecimal(itemPedido.getQuantidade())));
+        dto.setPrecoUnitario(itemPedido.getProduto().getPreco());
+        dto.setSubtotal(itemPedido.getProduto().getPreco().multiply(new BigDecimal(itemPedido.getQuantidade())));
         return dto;
     }
 }

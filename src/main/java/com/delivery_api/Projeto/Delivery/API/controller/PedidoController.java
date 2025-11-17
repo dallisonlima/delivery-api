@@ -42,8 +42,22 @@ public class PedidoController {
     public ResponseEntity<PedidoResponseDTO> atualizarStatusPedido(
             @PathVariable Long pedidoId,
             @RequestParam StatusPedido status) {
-        PedidoResponseDTO pedidoAtualizado = pedidoService.alterarStatus(pedidoId, status);
-        return ResponseEntity.ok(pedidoAtualizado);
+        try {
+            PedidoResponseDTO pedidoAtualizado = pedidoService.alterarStatus(pedidoId, status);
+            return ResponseEntity.ok(pedidoAtualizado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request para transição inválida
+        }
+    }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<PedidoResponseDTO> cancelarPedido(@PathVariable Long id) {
+        try {
+            PedidoResponseDTO pedidoCancelado = pedidoService.cancelarPedido(id);
+            return ResponseEntity.ok(pedidoCancelado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request se não puder cancelar
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -1,15 +1,20 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
+import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,30 +26,85 @@ public class ProdutoService {
     @Autowired
     private RestauranteRepository restauranteRepository;
 
-    public Produto cadastrar(Long restauranteId, Produto produto) {
-        Restaurante restaurante = restauranteRepository.findById(restauranteId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restauranteId));
+    public ProdutoResponseDTO cadastrar(ProdutoRequestDTO produtoDTO) {
+        Restaurante restaurante = restauranteRepository.findById(produtoDTO.getRestauranteId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + produtoDTO.getRestauranteId()));
 
-        validarProduto(produto);
+        Produto produto = new Produto();
+        produto.setNome(produtoDTO.getNome());
+        produto.setDescricao(produtoDTO.getDescricao());
+        produto.setPreco(produtoDTO.getPreco());
+        produto.setCategoria(produtoDTO.getCategoria());
+        produto.setDisponivel(produtoDTO.getDisponivel());
         produto.setRestaurante(restaurante);
-        produto.setDisponivel(true);
 
-        return produtoRepository.save(produto);
+        Produto novoProduto = produtoRepository.save(produto);
+        return toProdutoResponseDTO(novoProduto);
     }
 
-    public void definirDisponibilidade(Long produtoId, boolean disponivel) {
+    public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO produtoDTO) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
+
+        Restaurante restaurante = restauranteRepository.findById(produtoDTO.getRestauranteId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + produtoDTO.getRestauranteId()));
+
+        produto.setNome(produtoDTO.getNome());
+        produto.setDescricao(produtoDTO.getDescricao());
+        produto.setPreco(produtoDTO.getPreco());
+        produto.setCategoria(produtoDTO.getCategoria());
+        produto.setDisponivel(produtoDTO.getDisponivel());
+        produto.setRestaurante(restaurante);
+
+        Produto produtoAtualizado = produtoRepository.save(produto);
+        return toProdutoResponseDTO(produtoAtualizado);
+    }
+
+    public void alterarDisponibilidade(Long produtoId) {
         Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + produtoId));
-        produto.setDisponivel(disponivel);
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + produtoId));
+        produto.setDisponivel(!produto.getDisponivel()); // Alterna o status
         produtoRepository.save(produto);
     }
 
-    private void validarProduto(Produto produto) {
-        if (!StringUtils.hasText(produto.getNome())) {
-            throw new IllegalArgumentException("O nome do produto é obrigatório.");
+    public void deletar(Long id) {
+        if (!produtoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Produto não encontrado: " + id);
         }
-        if (produto.getPreco() == null || produto.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O preço do produto deve ser positivo.");
-        }
+        produtoRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId) {
+        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId).stream()
+                .map(this::toProdutoResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ProdutoResponseDTO> buscarPorId(Long id) {
+        return produtoRepository.findById(id)
+                .filter(Produto::getDisponivel)
+                .map(this::toProdutoResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
+        return produtoRepository.findByCategoria(categoria).stream()
+                .map(this::toProdutoResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProdutoResponseDTO toProdutoResponseDTO(Produto produto) {
+        ProdutoResponseDTO dto = new ProdutoResponseDTO();
+        dto.setId(produto.getId());
+        dto.setNome(produto.getNome());
+        dto.setDescricao(produto.getDescricao());
+        dto.setPreco(produto.getPreco());
+        dto.setCategoria(produto.getCategoria());
+        dto.setDisponivel(produto.getDisponivel());
+        dto.setRestauranteId(produto.getRestaurante().getId());
+        dto.setNomeRestaurante(produto.getRestaurante().getNome());
+        return dto;
     }
 }

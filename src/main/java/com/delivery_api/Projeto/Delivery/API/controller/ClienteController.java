@@ -1,7 +1,8 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
-import com.delivery_api.Projeto.Delivery.API.entity.Pedido;
+import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.StatusPedido;
 import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
 import com.delivery_api.Projeto.Delivery.API.service.ClienteService;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/api/clientes")
 @CrossOrigin(origins = "*")
 public class ClienteController {
 
@@ -29,46 +30,37 @@ public class ClienteController {
     private PedidoRepository pedidoRepository;
 
     @PostMapping
-    public ResponseEntity<Cliente> cadastrar(@Validated @RequestBody Cliente cliente) {
-        Cliente clienteSalvo = clienteService.cadastrar(cliente);
+    public ResponseEntity<ClienteResponseDTO> cadastrar(@Validated @RequestBody ClienteRequestDTO clienteDTO) {
+        ClienteResponseDTO clienteSalvo = clienteService.cadastrar(clienteDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(clienteSalvo);
     }
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> listarAtivos() {
+    public ResponseEntity<List<ClienteResponseDTO>> listarAtivos() {
         return ResponseEntity.ok(clienteService.listarAtivos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<ClienteResponseDTO> buscarPorId(@PathVariable Long id) {
         return clienteService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable Long id, @Validated @RequestBody Cliente cliente) {
-        Cliente clienteAtualizado = clienteService.atualizar(id, cliente);
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @Validated @RequestBody ClienteRequestDTO clienteDTO) {
+        ClienteResponseDTO clienteAtualizado = clienteService.atualizar(id, clienteDTO);
         return ResponseEntity.ok(clienteAtualizado);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> inativar(@PathVariable Long id) {
-        clienteService.inativar(id);
+    @PatchMapping("/{id}/toggle-status")
+    public ResponseEntity<Void> ativarDesativarCliente(@PathVariable Long id) {
+        clienteService.ativarDesativarCliente(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{clienteId}/pedidos")
-    public ResponseEntity<List<Pedido>> buscarPedidosPorCliente(@PathVariable Long clienteId) {
-        return ResponseEntity.ok(pedidoRepository.findByClienteId(clienteId));
-    }
-
-    @PatchMapping("/{clienteId}/pedidos/{pedidoId}/status")
-    public ResponseEntity<Pedido> atualizarStatusPedido(
-            @PathVariable Long clienteId,
-            @PathVariable Long pedidoId,
-            @RequestParam StatusPedido status) {
-        Pedido pedidoAtualizado = pedidoService.alterarStatusParaCliente(clienteId, pedidoId, status);
-        return ResponseEntity.ok(pedidoAtualizado);
+    public ResponseEntity<List<PedidoResponseDTO>> buscarPedidosPorCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(pedidoService.buscarPedidosPorCliente(clienteId));
     }
 }

@@ -4,16 +4,17 @@ import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
 public interface RestauranteRepository extends JpaRepository<Restaurante, Long> {
 
-    List<Restaurante> findByNomeContainingIgnoreCase(String nome);
-
     List<Restaurante> findByCategoria(String categoria);
 
     List<Restaurante> findByAtivoTrue();
 
-    List<Restaurante> findByOrderByAvaliacaoDesc();
+    List<Restaurante> findByTaxaEntregaLessThanEqual(BigDecimal taxa);
+
+    List<Restaurante> findTop5ByOrderByNomeAsc();
 }

@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 public class HealthController {
 
-    @GetMapping("/health")
+    @GetMapping("/api/health")
     public Map<String, String> health() {
         return Map.of(
                 "status", "UP",
@@ -19,7 +19,7 @@ public class HealthController {
         );
     }
 
-    @GetMapping("/info")
+    @GetMapping("/api/info")
     public AppInfo info() {
         return new AppInfo(
                 "Delivery Tech API",
@@ -30,7 +30,6 @@ public class HealthController {
         );
     }
 
-    // Record para demonstrar recurso do Java 14+ (disponível no JDK 21)
     public record AppInfo(
             String application,
             String version,

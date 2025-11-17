@@ -36,6 +36,12 @@ public class PedidoService {
     public PedidoResponseDTO criar(PedidoRequestDTO pedidoDTO) {
         Cliente cliente = clienteRepository.findById(pedidoDTO.getCliente().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado."));
+        
+        // Validação: Verificar se o cliente está ativo
+        if (!cliente.getAtivo()) {
+            throw new IllegalArgumentException("Cliente inativo não pode fazer pedidos.");
+        }
+
         Restaurante restaurante = restauranteRepository.findById(pedidoDTO.getRestaurante().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado."));
 
@@ -52,6 +58,11 @@ public class PedidoService {
         for (ItemPedidoRequestDTO itemDTO : pedidoDTO.getItens()) {
             Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProduto().getId()));
+
+            // Validação: Verificar se o produto pertence ao restaurante do pedido
+            if (!produto.getRestaurante().getId().equals(restaurante.getId())) {
+                throw new IllegalArgumentException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
+            }
 
             if (!produto.getDisponivel()) {
                 throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
@@ -135,6 +146,11 @@ public class PedidoService {
             Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProduto().getId()));
 
+            // Validação: Verificar se o produto pertence ao restaurante do pedido
+            if (!produto.getRestaurante().getId().equals(restaurante.getId())) {
+                throw new IllegalArgumentException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
+            }
+
             if (!produto.getDisponivel()) {
                 throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
             }
@@ -148,10 +164,10 @@ public class PedidoService {
             case PENDENTE:
                 return newStatus == StatusPedido.CONFIRMADO || newStatus == StatusPedido.CANCELADO;
             case CONFIRMADO:
-                return newStatus == StatusPedido.EM_PREPARO || newStatus == StatusPedido.CANCELADO; // Corrigido EM_PREPARACAO para EM_PREPARO
-            case EM_PREPARO: // Corrigido EM_PREPARACAO para EM_PREPARO
-                return newStatus == StatusPedido.SAIU_PARA_ENTREGA; // Corrigido EM_ROTA_DE_ENTREGA para SAIU_PARA_ENTREGA
-            case SAIU_PARA_ENTREGA: // Corrigido EM_ROTA_DE_ENTREGA para SAIU_PARA_ENTREGA
+                return newStatus == StatusPedido.EM_PREPARO || newStatus == StatusPedido.CANCELADO;
+            case EM_PREPARO:
+                return newStatus == StatusPedido.SAIU_PARA_ENTREGA;
+            case SAIU_PARA_ENTREGA:
                 return newStatus == StatusPedido.ENTREGUE;
             case ENTREGUE:
             case CANCELADO:

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -75,6 +76,13 @@ public class RestauranteService {
     }
 
     @Transactional(readOnly = true)
+    public List<RestauranteResponseDTO> buscarRestaurantesDisponiveis() {
+        return restauranteRepository.findByAtivoTrue().stream()
+                .map(this::toRestauranteResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public Optional<RestauranteResponseDTO> buscarPorId(Long id) {
         return restauranteRepository.findById(id).map(this::toRestauranteResponseDTO);
     }
@@ -84,6 +92,15 @@ public class RestauranteService {
         return restauranteRepository.findByCategoria(categoria).stream()
                 .map(this::toRestauranteResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal calcularTaxaEntrega(Long restauranteId, String cep) {
+        Restaurante restaurante = restauranteRepository.findById(restauranteId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restauranteId));
+        // Por enquanto, a lógica é simples: retorna a taxa de entrega fixa do restaurante.
+        // Se houver necessidade de uma lógica mais complexa baseada no CEP, ela seria implementada aqui.
+        return restaurante.getTaxaEntrega();
     }
 
     private RestauranteResponseDTO toRestauranteResponseDTO(Restaurante restaurante) {

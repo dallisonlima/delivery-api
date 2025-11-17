@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -28,6 +29,11 @@ public class RestauranteController {
     @GetMapping
     public ResponseEntity<List<RestauranteResponseDTO>> listar() {
         return ResponseEntity.ok(restauranteService.listarTodos());
+    }
+
+    @GetMapping("/disponiveis")
+    public ResponseEntity<List<RestauranteResponseDTO>> buscarRestaurantesDisponiveis() {
+        return ResponseEntity.ok(restauranteService.buscarRestaurantesDisponiveis());
     }
 
     @GetMapping("/{id}")
@@ -56,6 +62,16 @@ public class RestauranteController {
     @GetMapping("/categoria/{categoria}")
     public ResponseEntity<List<RestauranteResponseDTO>> buscarPorCategoria(@PathVariable String categoria) {
         return ResponseEntity.ok(restauranteService.buscarPorCategoria(categoria));
+    }
+
+    @GetMapping("/{restauranteId}/taxa-entrega")
+    public ResponseEntity<BigDecimal> calcularTaxaEntrega(@PathVariable Long restauranteId, @RequestParam(required = false) String cep) {
+        try {
+            BigDecimal taxa = restauranteService.calcularTaxaEntrega(restauranteId, cep);
+            return ResponseEntity.ok(taxa);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/ativar")

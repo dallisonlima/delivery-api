@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/produtos")
+@RequestMapping("/api/produtos")
 @CrossOrigin(origins = "*")
 public class ProdutoController {
 
@@ -50,14 +50,13 @@ public class ProdutoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletar(@PathVariable Long id) { // Alterado o tipo de retorno para String
+    public ResponseEntity<String> deletar(@PathVariable Long id) {
         try {
             produtoService.deletar(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (DataIntegrityViolationException e) {
-            // Retorna 409 Conflict ou 400 Bad Request com uma mensagem explicativa
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Não é possível deletar o produto pois ele está associado a pedidos. Considere alterar sua disponibilidade.");
         }

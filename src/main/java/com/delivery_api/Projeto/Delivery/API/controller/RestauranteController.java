@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/restaurantes")
+@RequestMapping("/api/restaurantes")
 @CrossOrigin(origins = "*")
 public class RestauranteController {
 
@@ -51,14 +51,13 @@ public class RestauranteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletar(@PathVariable Long id) { // Alterado o tipo de retorno para String
+    public ResponseEntity<String> deletar(@PathVariable Long id) {
         try {
             restauranteService.deletar(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (DataIntegrityViolationException e) {
-            // Retorna 409 Conflict ou 400 Bad Request com uma mensagem explicativa
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Não é possível deletar o restaurante pois ele possui pedidos associados. Considere inativá-lo.");
         }

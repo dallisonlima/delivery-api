@@ -337,6 +337,22 @@
       "_type": "request"
     },
     {
+      "_id": "req_get_produtos_restaurante",
+      "parentId": "fld_restaurantes",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/api/restaurantes/1/produtos",
+      "name": "Buscar Produtos por Restaurante",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -55,
+      "_type": "request"
+    },
+    {
       "_id": "req_delete_restaurante",
       "parentId": "fld_restaurantes",
       "modified": 1698399600000,
@@ -402,22 +418,6 @@
       "_type": "request"
     },
     {
-      "_id": "req_get_produtos_restaurante",
-      "parentId": "fld_produtos",
-      "modified": 1698399600000,
-      "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/produtos/restaurante/1",
-      "name": "Buscar Produtos por Restaurante",
-      "description": "",
-      "method": "GET",
-      "body": {},
-      "parameters": [],
-      "headers": [],
-      "authentication": {},
-      "metaSortKey": -90,
-      "_type": "request"
-    },
-    {
       "_id": "req_get_produto_id",
       "parentId": "fld_produtos",
       "modified": 1698399600000,
@@ -450,12 +450,30 @@
       "_type": "request"
     },
     {
-      "_id": "req_patch_produto_toggle_disponibilidade",
+      "_id": "req_get_produtos_buscar_nome",
       "parentId": "fld_produtos",
       "modified": 1698399600000,
       "created": 1698399600000,
-      "url": "{{ _.baseUrl }}/api/produtos/1/toggle-disponibilidade",
-      "name": "Alternar Disponibilidade Produto",
+      "url": "{{ _.baseUrl }}/api/produtos/buscar",
+      "name": "Buscar Produto por Nome",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {"name": "nome", "value": "Feijoada", "disabled": false}
+      ],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -78,
+      "_type": "request"
+    },
+    {
+      "_id": "req_patch_produto_disponibilidade",
+      "parentId": "fld_produtos",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/api/produtos/1/disponibilidade",
+      "name": "Alterar Disponibilidade Produto",
       "description": "",
       "method": "PATCH",
       "body": {},

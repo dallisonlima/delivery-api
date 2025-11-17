@@ -32,11 +32,6 @@ public class ProdutoController {
         return ResponseEntity.ok(produtoAtualizado);
     }
 
-    @GetMapping("/restaurante/{restauranteId}")
-    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorRestaurante(@PathVariable Long restauranteId) {
-        return ResponseEntity.ok(produtoService.buscarProdutosPorRestaurante(restauranteId));
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoResponseDTO> buscarPorId(@PathVariable Long id) {
         return produtoService.buscarPorId(id)
@@ -62,9 +57,14 @@ public class ProdutoController {
         }
     }
 
-    @PatchMapping("/{id}/toggle-disponibilidade")
+    @PatchMapping("/{id}/disponibilidade")
     public ResponseEntity<Void> alterarDisponibilidade(@PathVariable Long id) {
         produtoService.alterarDisponibilidade(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorNome(@RequestParam String nome) {
+        return ResponseEntity.ok(produtoService.buscarPorNome(nome));
     }
 }

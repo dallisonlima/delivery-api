@@ -95,6 +95,13 @@ public class ProdutoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> buscarPorNome(String nome) {
+        return produtoRepository.findByNomeContainingIgnoreCase(nome).stream()
+                .map(this::toProdutoResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     private ProdutoResponseDTO toProdutoResponseDTO(Produto produto) {
         ProdutoResponseDTO dto = new ProdutoResponseDTO();
         dto.setId(produto.getId());

@@ -1,7 +1,9 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
+import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;
 import com.delivery_api.Projeto.Delivery.API.service.RestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException; // Importar a exceção
@@ -20,6 +22,9 @@ public class RestauranteController {
 
     @Autowired
     private RestauranteService restauranteService;
+
+    @Autowired
+    private ProdutoService produtoService;
 
     @PostMapping
     public ResponseEntity<RestauranteResponseDTO> cadastrar(@Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
@@ -94,5 +99,10 @@ public class RestauranteController {
     public ResponseEntity<List<RestauranteResponseDTO>> buscarProximos(@PathVariable String cep) {
         // TODO: Implementar a busca por restaurantes próximos
         return ResponseEntity.ok(List.of());
+    }
+
+    @GetMapping("/{restauranteId}/produtos")
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutosPorRestaurante(@PathVariable Long restauranteId) {
+        return ResponseEntity.ok(produtoService.buscarProdutosPorRestaurante(restauranteId));
     }
 }

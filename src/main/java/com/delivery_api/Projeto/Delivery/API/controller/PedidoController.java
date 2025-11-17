@@ -1,11 +1,16 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.entity.Pedido;
+import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.entity.StatusPedido;
 import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -16,8 +21,38 @@ public class PedidoController {
     private PedidoService pedidoService;
 
     @PostMapping
-    public ResponseEntity<Pedido> criar(@RequestBody Pedido pedido) {
-        Pedido novoPedido = pedidoService.criar(pedido);
+    public ResponseEntity<PedidoResponseDTO> criar(@Validated @RequestBody PedidoRequestDTO pedidoDTO) {
+        PedidoResponseDTO novoPedido = pedidoService.criar(pedidoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoPedido);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PedidoResponseDTO> buscarPorId(@PathVariable Long id) {
+        return pedidoService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<PedidoResponseDTO>> buscarPedidosPorCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(pedidoService.buscarPedidosPorCliente(clienteId));
+    }
+
+    @PatchMapping("/{pedidoId}/status")
+    public ResponseEntity<PedidoResponseDTO> atualizarStatusPedido(
+            @PathVariable Long pedidoId,
+            @RequestParam StatusPedido status) {
+        PedidoResponseDTO pedidoAtualizado = pedidoService.alterarStatus(pedidoId, status);
+        return ResponseEntity.ok(pedidoAtualizado);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        try {
+            pedidoService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

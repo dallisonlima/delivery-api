@@ -1,5 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
+import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -16,68 +19,78 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    public Cliente cadastrar(Cliente cliente) {
-        if (clienteRepository.existsByEmail(cliente.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + cliente.getEmail());
+    public ClienteResponseDTO cadastrar(ClienteRequestDTO clienteDTO) {
+        if (clienteRepository.existsByEmail(clienteDTO.getEmail())) {
+            throw new IllegalArgumentException("Email já cadastrado: " + clienteDTO.getEmail());
         }
-        validarDadosCliente(cliente);
+
+        Cliente cliente = new Cliente();
+        cliente.setNome(clienteDTO.getNome());
+        cliente.setEmail(clienteDTO.getEmail());
+        cliente.setTelefone(clienteDTO.getTelefone());
+        cliente.setEndereco(clienteDTO.getEndereco());
         cliente.setAtivo(true);
-        return clienteRepository.save(cliente);
+
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return toClienteResponseDTO(clienteSalvo);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorId(Long id) {
-        return clienteRepository.findById(id);
+    public Optional<ClienteResponseDTO> buscarPorId(Long id) {
+        return clienteRepository.findById(id).map(this::toClienteResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorEmail(String email) {
-        return clienteRepository.findByEmail(email);
+    public Optional<ClienteResponseDTO> buscarPorEmail(String email) {
+        return clienteRepository.findByEmail(email).map(this::toClienteResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<Cliente> listarAtivos() {
-        return clienteRepository.findByAtivoTrue();
+    public List<ClienteResponseDTO> listarAtivos() {
+        return clienteRepository.findByAtivoTrue().stream()
+                .map(this::toClienteResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Cliente atualizar(Long id, Cliente clienteAtualizado) {
-        Cliente cliente = buscarPorId(id)
+    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteAtualizadoDTO) {
+        Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
 
-        if (!cliente.getEmail().equals(clienteAtualizado.getEmail()) &&
-                clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + clienteAtualizado.getEmail());
+        if (!cliente.getEmail().equals(clienteAtualizadoDTO.getEmail()) &&
+                clienteRepository.existsByEmail(clienteAtualizadoDTO.getEmail())) {
+            throw new IllegalArgumentException("Email já cadastrado: " + clienteAtualizadoDTO.getEmail());
         }
 
-        cliente.setNome(clienteAtualizado.getNome());
-        cliente.setEmail(clienteAtualizado.getEmail());
-        cliente.setTelefone(clienteAtualizado.getTelefone());
-        cliente.setEndereco(clienteAtualizado.getEndereco());
+        cliente.setNome(clienteAtualizadoDTO.getNome());
+        cliente.setEmail(clienteAtualizadoDTO.getEmail());
+        cliente.setTelefone(clienteAtualizadoDTO.getTelefone());
+        cliente.setEndereco(clienteAtualizadoDTO.getEndereco());
 
-        return clienteRepository.save(cliente);
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return toClienteResponseDTO(clienteSalvo);
     }
 
-    public void inativar(Long id) {
-        Cliente cliente = buscarPorId(id)
+    public void ativarDesativarCliente(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
-        cliente.inativar();
+        cliente.setAtivo(!cliente.getAtivo()); // Alterna o status
         clienteRepository.save(cliente);
     }
 
     @Transactional(readOnly = true)
     public List<Cliente> buscarPorNome(String nome) {
+        // Este método ainda retorna Cliente, se precisar de DTO, me avise.
         return clienteRepository.findByNomeContainingIgnoreCase(nome);
     }
 
-    private void validarDadosCliente(Cliente cliente) {
-        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome é obrigatório");
-        }
-        if (cliente.getEmail() == null || cliente.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email é obrigatório");
-        }
-        if (cliente.getNome().length() < 2) {
-            throw new IllegalArgumentException("Nome deve ter pelo menos 2 caracteres");
-        }
+    private ClienteResponseDTO toClienteResponseDTO(Cliente cliente) {
+        ClienteResponseDTO dto = new ClienteResponseDTO();
+        dto.setId(cliente.getId());
+        dto.setNome(cliente.getNome());
+        dto.setEmail(cliente.getEmail());
+        dto.setTelefone(cliente.getTelefone());
+        dto.setEndereco(cliente.getEndereco());
+        dto.setAtivo(cliente.getAtivo());
+        return dto;
     }
 }

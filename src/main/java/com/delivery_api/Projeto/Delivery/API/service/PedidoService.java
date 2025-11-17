@@ -1,5 +1,9 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
+import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
@@ -11,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,63 +33,115 @@ public class PedidoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    public Pedido criar(Pedido pedido) {
-        validarPedido(pedido);
-
-        Cliente cliente = clienteRepository.findById(pedido.getCliente().getId())
+    public PedidoResponseDTO criar(PedidoRequestDTO pedidoDTO) {
+        Cliente cliente = clienteRepository.findById(pedidoDTO.getClienteId())
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado."));
-        Restaurante restaurante = restauranteRepository.findById(pedido.getRestaurante().getId())
+        Restaurante restaurante = restauranteRepository.findById(pedidoDTO.getRestauranteId())
                 .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado."));
 
+        Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setRestaurante(restaurante);
         pedido.setDataPedido(LocalDateTime.now());
         pedido.setStatus(StatusPedido.PENDENTE);
+        pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
 
         BigDecimal valorTotalItens = BigDecimal.ZERO;
         StringBuilder descricaoItens = new StringBuilder();
+        List<ItemPedido> itensDoPedido = new ArrayList<>();
 
-        for (ItemPedido item : pedido.getItens()) {
-            Produto produto = produtoRepository.findById(item.getProduto().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + item.getProduto().getId()));
+        for (ItemPedidoRequestDTO itemDTO : pedidoDTO.getItens()) {
+            Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProdutoId()));
 
             if (!produto.getDisponivel()) {
                 throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
             }
 
-            item.setPedido(pedido);
-            item.setPrecoUnitario(produto.getPreco());
-            valorTotalItens = valorTotalItens.add(produto.getPreco().multiply(new BigDecimal(item.getQuantidade())));
+            ItemPedido itemPedido = new ItemPedido();
+            itemPedido.setPedido(pedido);
+            itemPedido.setProduto(produto);
+            itemPedido.setQuantidade(itemDTO.getQuantidade());
+            itemPedido.setPrecoUnitario(produto.getPreco());
+            itensDoPedido.add(itemPedido);
+
+            valorTotalItens = valorTotalItens.add(produto.getPreco().multiply(new BigDecimal(itemDTO.getQuantidade())));
 
             if (descricaoItens.length() > 0) {
                 descricaoItens.append(", ");
             }
-            descricaoItens.append(produto.getNome()).append(" (").append(item.getQuantidade()).append("x)");
+            descricaoItens.append(produto.getNome()).append(" (").append(itemDTO.getQuantidade()).append("x)");
         }
 
+        pedido.setItens(itensDoPedido);
         pedido.setItensDescricao(descricaoItens.toString());
         pedido.setValorTotal(valorTotalItens.add(restaurante.getTaxaEntrega()));
 
-        return pedidoRepository.save(pedido);
+        Pedido pedidoSalvo = pedidoRepository.save(pedido);
+        return toPedidoResponseDTO(pedidoSalvo);
     }
 
-    public Pedido alterarStatusParaCliente(Long clienteId, Long pedidoId, StatusPedido novoStatus) {
+    public PedidoResponseDTO alterarStatus(Long pedidoId, StatusPedido novoStatus) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
+        pedido.setStatus(novoStatus);
+        Pedido pedidoAtualizado = pedidoRepository.save(pedido);
+        return toPedidoResponseDTO(pedidoAtualizado);
+    }
+
+    public PedidoResponseDTO alterarStatusParaCliente(Long clienteId, Long pedidoId, StatusPedido novoStatus) {
         Pedido pedido = pedidoRepository.findByIdAndClienteIdWithItens(pedidoId, clienteId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado para este cliente."));
 
         pedido.setStatus(novoStatus);
-        return pedidoRepository.save(pedido);
+        Pedido pedidoAtualizado = pedidoRepository.save(pedido);
+        return toPedidoResponseDTO(pedidoAtualizado);
     }
 
-    private void validarPedido(Pedido pedido) {
-        if (pedido.getCliente() == null || pedido.getCliente().getId() == null) {
-            throw new IllegalArgumentException("O cliente é obrigatório.");
+    public void deletar(Long id) {
+        if (!pedidoRepository.existsById(id)) {
+            throw new IllegalArgumentException("Pedido não encontrado: " + id);
         }
-        if (pedido.getRestaurante() == null || pedido.getRestaurante().getId() == null) {
-            throw new IllegalArgumentException("O restaurante é obrigatório.");
-        }
-        if (pedido.getItens() == null || pedido.getItens().isEmpty()) {
-            throw new IllegalArgumentException("O pedido deve conter pelo menos um item.");
-        }
+        pedidoRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PedidoResponseDTO> buscarPorId(Long id) {
+        return pedidoRepository.findById(id).map(this::toPedidoResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId) {
+        return pedidoRepository.findByClienteId(clienteId).stream()
+                .map(this::toPedidoResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
+        PedidoResponseDTO dto = new PedidoResponseDTO();
+        dto.setId(pedido.getId());
+        dto.setNumeroPedido(pedido.getNumeroPedido());
+        dto.setClienteId(pedido.getCliente().getId());
+        dto.setClienteNome(pedido.getCliente().getNome());
+        dto.setRestauranteId(pedido.getRestaurante().getId());
+        dto.setRestauranteNome(pedido.getRestaurante().getNome());
+        dto.setItens(pedido.getItens().stream()
+                .map(this::toItemPedidoResponseDTO)
+                .collect(Collectors.toList()));
+        dto.setValorTotal(pedido.getValorTotal());
+        dto.setStatus(pedido.getStatus());
+        dto.setDataPedido(pedido.getDataPedido());
+        dto.setEnderecoEntrega(pedido.getEnderecoEntrega());
+        return dto;
+    }
+
+    private ItemPedidoResponseDTO toItemPedidoResponseDTO(ItemPedido itemPedido) {
+        ItemPedidoResponseDTO dto = new ItemPedidoResponseDTO();
+        dto.setProdutoId(itemPedido.getProduto().getId());
+        dto.setProdutoNome(itemPedido.getProduto().getNome());
+        dto.setQuantidade(itemPedido.getQuantidade());
+        dto.setPrecoUnitario(itemPedido.getPrecoUnitario());
+        dto.setSubtotal(itemPedido.getPrecoUnitario().multiply(new BigDecimal(itemPedido.getQuantidade())));
+        return dto;
     }
 }

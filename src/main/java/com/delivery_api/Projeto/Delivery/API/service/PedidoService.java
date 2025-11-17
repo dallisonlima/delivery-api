@@ -9,6 +9,8 @@ import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,15 +37,15 @@ public class PedidoService {
 
     public PedidoResponseDTO criar(PedidoRequestDTO pedidoDTO) {
         Cliente cliente = clienteRepository.findById(pedidoDTO.getCliente().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado."));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado."));
         
         // Validação: Verificar se o cliente está ativo
         if (!cliente.getAtivo()) {
-            throw new IllegalArgumentException("Cliente inativo não pode fazer pedidos.");
+            throw new BusinessException("Cliente inativo não pode fazer pedidos.");
         }
 
         Restaurante restaurante = restauranteRepository.findById(pedidoDTO.getRestaurante().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado."));
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado."));
 
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
@@ -57,15 +59,15 @@ public class PedidoService {
 
         for (ItemPedidoRequestDTO itemDTO : pedidoDTO.getItens()) {
             Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProduto().getId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + itemDTO.getProduto().getId()));
 
             // Validação: Verificar se o produto pertence ao restaurante do pedido
             if (!produto.getRestaurante().getId().equals(restaurante.getId())) {
-                throw new IllegalArgumentException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
+                throw new BusinessException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
             }
 
             if (!produto.getDisponivel()) {
-                throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
+                throw new BusinessException("Produto indisponível: " + produto.getNome());
             }
 
             ItemPedido itemPedido = new ItemPedido();
@@ -92,10 +94,10 @@ public class PedidoService {
 
     public PedidoResponseDTO alterarStatus(Long pedidoId, StatusPedido novoStatus) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado."));
 
         if (!isValidTransition(pedido.getStatus(), novoStatus)) {
-            throw new IllegalArgumentException("Transição de status inválida de " + pedido.getStatus() + " para " + novoStatus);
+            throw new BusinessException("Transição de status inválida de " + pedido.getStatus() + " para " + novoStatus);
         }
 
         pedido.setStatus(novoStatus);
@@ -105,11 +107,11 @@ public class PedidoService {
 
     public PedidoResponseDTO cancelarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id));
 
         // Valida se o status atual permite o cancelamento
         if (pedido.getStatus() == StatusPedido.ENTREGUE || pedido.getStatus() == StatusPedido.CANCELADO) {
-            throw new IllegalArgumentException("Não é possível cancelar um pedido com status " + pedido.getStatus());
+            throw new BusinessException("Não é possível cancelar um pedido com status " + pedido.getStatus());
         }
 
         pedido.setStatus(StatusPedido.CANCELADO);
@@ -119,7 +121,7 @@ public class PedidoService {
 
     public void deletar(Long id) {
         if (!pedidoRepository.existsById(id)) {
-            throw new IllegalArgumentException("Pedido não encontrado: " + id);
+            throw new EntityNotFoundException("Pedido não encontrado: " + id);
         }
         pedidoRepository.deleteById(id);
     }
@@ -139,20 +141,20 @@ public class PedidoService {
     @Transactional(readOnly = true)
     public BigDecimal calcularTotalPedido(Long restauranteId, List<ItemPedidoRequestDTO> itensDTO) {
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restauranteId));
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + restauranteId));
 
         BigDecimal total = BigDecimal.ZERO;
         for (ItemPedidoRequestDTO itemDTO : itensDTO) {
             Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + itemDTO.getProduto().getId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + itemDTO.getProduto().getId()));
 
             // Validação: Verificar se o produto pertence ao restaurante do pedido
             if (!produto.getRestaurante().getId().equals(restaurante.getId())) {
-                throw new IllegalArgumentException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
+                throw new BusinessException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
             }
 
             if (!produto.getDisponivel()) {
-                throw new IllegalArgumentException("Produto indisponível: " + produto.getNome());
+                throw new BusinessException("Produto indisponível: " + produto.getNome());
             }
             total = total.add(produto.getPreco().multiply(new BigDecimal(itemDTO.getQuantidade())));
         }

@@ -6,6 +6,8 @@ import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,7 @@ public class ProdutoService {
 
     public ProdutoResponseDTO cadastrar(ProdutoRequestDTO produtoDTO) {
         Restaurante restaurante = restauranteRepository.findById(produtoDTO.getRestauranteId())
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + produtoDTO.getRestauranteId()));
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + produtoDTO.getRestauranteId()));
 
         Produto produto = new Produto();
         produto.setNome(produtoDTO.getNome());
@@ -42,10 +44,10 @@ public class ProdutoService {
 
     public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO produtoDTO) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
 
         Restaurante restaurante = restauranteRepository.findById(produtoDTO.getRestauranteId())
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + produtoDTO.getRestauranteId()));
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + produtoDTO.getRestauranteId()));
 
         produto.setNome(produtoDTO.getNome());
         produto.setDescricao(produtoDTO.getDescricao());
@@ -60,14 +62,14 @@ public class ProdutoService {
 
     public void alterarDisponibilidade(Long produtoId) {
         Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + produtoId));
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + produtoId));
         produto.setDisponivel(!produto.getDisponivel()); // Alterna o status
         produtoRepository.save(produto);
     }
 
     public void deletar(Long id) {
         if (!produtoRepository.existsById(id)) {
-            throw new IllegalArgumentException("Produto não encontrado: " + id);
+            throw new EntityNotFoundException("Produto não encontrado: " + id);
         }
         produtoRepository.deleteById(id);
     }

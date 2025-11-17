@@ -4,6 +4,8 @@ import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ public class ClienteService {
 
     public ClienteResponseDTO cadastrar(ClienteRequestDTO clienteDTO) {
         if (clienteRepository.existsByEmail(clienteDTO.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + clienteDTO.getEmail());
+            throw new BusinessException("Email já cadastrado: " + clienteDTO.getEmail());
         }
 
         Cliente cliente = new Cliente();
@@ -54,11 +56,11 @@ public class ClienteService {
 
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteAtualizadoDTO) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
 
         if (!cliente.getEmail().equals(clienteAtualizadoDTO.getEmail()) &&
                 clienteRepository.existsByEmail(clienteAtualizadoDTO.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + clienteAtualizadoDTO.getEmail());
+            throw new BusinessException("Email já cadastrado: " + clienteAtualizadoDTO.getEmail());
         }
 
         cliente.setNome(clienteAtualizadoDTO.getNome());
@@ -72,7 +74,7 @@ public class ClienteService {
 
     public void ativarDesativarCliente(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
         cliente.setAtivo(!cliente.getAtivo()); // Alterna o status
         clienteRepository.save(cliente);
     }

@@ -1,25 +1,35 @@
 package com.delivery_api.Projeto.Delivery.API.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
 
 @Data
+@Schema(name = "RestauranteResponseDTO", description = "DTO para exibir um restaurante")
 public class RestauranteResponseDTO {
 
+    @Schema(description = "ID do restaurante", example = "1")
     private Long id;
 
+    @Schema(description = "Nome do restaurante", example = "Restaurante do Zé")
     private String nome;
 
+    @Schema(description = "Taxa de entrega do restaurante", example = "5.00")
     private BigDecimal taxaEntrega;
 
+    @Schema(description = "Categoria do restaurante", example = "Brasileira")
     private String categoria;
 
+    @Schema(description = "Indica se o restaurante está ativo", example = "true")
     private Boolean ativo;
 
+    @Schema(description = "Endereço do restaurante", example = "Rua das Flores, 123, São Paulo, SP")
     private String endereco;
 
+    @Schema(description = "Avaliação do restaurante", example = "4.5")
     private Double avaliacao;
 
+    @Schema(description = "Telefone do restaurante", example = "(11) 99999-9999")
     private String telefone;
 }

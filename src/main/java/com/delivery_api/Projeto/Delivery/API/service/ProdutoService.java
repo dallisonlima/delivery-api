@@ -58,10 +58,10 @@ public class ProdutoService {
         return toProdutoResponseDTO(produtoAtualizado);
     }
 
-    public void definirDisponibilidade(Long produtoId, boolean disponivel) {
+    public void alterarDisponibilidade(Long produtoId) {
         Produto produto = produtoRepository.findById(produtoId)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + produtoId));
-        produto.setDisponivel(disponivel);
+        produto.setDisponivel(!produto.getDisponivel()); // Alterna o status
         produtoRepository.save(produto);
     }
 
@@ -73,15 +73,24 @@ public class ProdutoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarPorRestaurante(Long restauranteId) {
-        return produtoRepository.findByRestauranteId(restauranteId).stream()
+    public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId) {
+        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId).stream()
                 .map(this::toProdutoResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Optional<ProdutoResponseDTO> buscarPorId(Long id) {
-        return produtoRepository.findById(id).map(this::toProdutoResponseDTO);
+        return produtoRepository.findById(id)
+                .filter(Produto::getDisponivel)
+                .map(this::toProdutoResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
+        return produtoRepository.findByCategoria(categoria).stream()
+                .map(this::toProdutoResponseDTO)
+                .collect(Collectors.toList());
     }
 
     private ProdutoResponseDTO toProdutoResponseDTO(Produto produto) {

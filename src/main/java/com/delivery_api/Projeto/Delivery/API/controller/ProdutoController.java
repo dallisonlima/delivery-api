@@ -33,7 +33,7 @@ public class ProdutoController {
 
     @GetMapping("/restaurante/{restauranteId}")
     public ResponseEntity<List<ProdutoResponseDTO>> buscarPorRestaurante(@PathVariable Long restauranteId) {
-        return ResponseEntity.ok(produtoService.buscarPorRestaurante(restauranteId));
+        return ResponseEntity.ok(produtoService.buscarProdutosPorRestaurante(restauranteId));
     }
 
     @GetMapping("/{id}")
@@ -41,6 +41,11 @@ public class ProdutoController {
         return produtoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/categoria/{categoria}")
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutosPorCategoria(@PathVariable String categoria) {
+        return ResponseEntity.ok(produtoService.buscarProdutosPorCategoria(categoria));
     }
 
     @DeleteMapping("/{id}")
@@ -53,9 +58,9 @@ public class ProdutoController {
         }
     }
 
-    @PatchMapping("/{id}/disponibilidade")
-    public ResponseEntity<Void> definirDisponibilidade(@PathVariable Long id, @RequestParam boolean disponivel) {
-        produtoService.definirDisponibilidade(id, disponivel);
+    @PatchMapping("/{id}/toggle-disponibilidade")
+    public ResponseEntity<Void> alterarDisponibilidade(@PathVariable Long id) {
+        produtoService.alterarDisponibilidade(id);
         return ResponseEntity.noContent().build();
     }
 }

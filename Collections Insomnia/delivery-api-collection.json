@@ -343,6 +343,38 @@
       "_type": "request"
     },
     {
+      "_id": "req_get_produto_id",
+      "parentId": "fld_produtos",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/produtos/1",
+      "name": "Buscar Produto por ID",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -85,
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_produtos_categoria",
+      "parentId": "fld_produtos",
+      "modified": 1698399600000,
+      "created": 1698399600000,
+      "url": "{{ _.baseUrl }}/produtos/categoria/Prato Principal",
+      "name": "Buscar Produtos por Categoria",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -80,
+      "_type": "request"
+    },
+    {
       "_id": "fld_pedidos",
       "parentId": "wrk_1",
       "modified": 1698399600000,

@@ -106,10 +106,6 @@ public class PedidoService {
         return toPedidoResponseDTO(pedidoCancelado);
     }
 
-    public void deletar(Long id) {
-        cancelarPedido(id);
-    }
-
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> listar(StatusPedido status, LocalDate data) {
         Specification<Pedido> spec = Specification.where(null);
@@ -168,17 +164,48 @@ public class PedidoService {
     }
 
     private boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {
-        // ... (lógica de transição)
-        return true;
+        switch (currentStatus) {
+            case PENDENTE:
+                return newStatus == StatusPedido.CONFIRMADO || newStatus == StatusPedido.CANCELADO;
+            case CONFIRMADO:
+                return newStatus == StatusPedido.EM_PREPARO || newStatus == StatusPedido.CANCELADO;
+            case EM_PREPARO:
+                return newStatus == StatusPedido.SAIU_PARA_ENTREGA;
+            case SAIU_PARA_ENTREGA:
+                return newStatus == StatusPedido.ENTREGUE;
+            case ENTREGUE:
+            case CANCELADO:
+                return false;
+            default:
+                return false;
+        }
     }
 
     private PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
-        // ... (conversão para DTO)
-        return new PedidoResponseDTO();
+        PedidoResponseDTO dto = new PedidoResponseDTO();
+        dto.setId(pedido.getId());
+        dto.setNumeroPedido(pedido.getNumeroPedido());
+        dto.setClienteId(pedido.getCliente().getId());
+        dto.setClienteNome(pedido.getCliente().getNome());
+        dto.setRestauranteId(pedido.getRestaurante().getId());
+        dto.setRestauranteNome(pedido.getRestaurante().getNome());
+        dto.setItens(pedido.getItens().stream()
+                .map(this::toItemPedidoResponseDTO)
+                .collect(Collectors.toList()));
+        dto.setValorTotal(pedido.getValorTotal());
+        dto.setStatus(pedido.getStatus());
+        dto.setDataPedido(pedido.getDataPedido());
+        dto.setEnderecoEntrega(pedido.getEnderecoEntrega());
+        return dto;
     }
 
     private ItemPedidoResponseDTO toItemPedidoResponseDTO(ItemPedido itemPedido) {
-        // ... (conversão para DTO)
-        return new ItemPedidoResponseDTO();
+        ItemPedidoResponseDTO dto = new ItemPedidoResponseDTO();
+        dto.setProdutoId(itemPedido.getProduto().getId());
+        dto.setProdutoNome(itemPedido.getProduto().getNome());
+        dto.setQuantidade(itemPedido.getQuantidade());
+        dto.setPrecoUnitario(itemPedido.getProduto().getPreco());
+        dto.setSubtotal(itemPedido.getProduto().getPreco().multiply(new BigDecimal(itemPedido.getQuantidade())));
+        return dto;
     }
 }

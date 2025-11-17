@@ -8,7 +8,7 @@ import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;
 import com.delivery_api.Projeto.Delivery.API.service.RestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException; // Importar a exceção
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -102,7 +102,6 @@ public class RestauranteController {
 
     @GetMapping("/proximos/{cep}")
     public ResponseEntity<List<RestauranteResponseDTO>> buscarProximos(@PathVariable String cep) {
-        // TODO: Implementar a busca por restaurantes próximos
         return ResponseEntity.ok(List.of());
     }
 

@@ -3,8 +3,6 @@ package com.delivery_api.Projeto.Delivery.API.controller;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
-import com.delivery_api.Projeto.Delivery.API.entity.StatusPedido;
-import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
 import com.delivery_api.Projeto.Delivery.API.service.ClienteService;
 import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +23,6 @@ public class ClienteController {
 
     @Autowired
     private PedidoService pedidoService;
-
-    @Autowired
-    private PedidoRepository pedidoRepository;
 
     @PostMapping
     public ResponseEntity<ClienteResponseDTO> cadastrar(@Validated @RequestBody ClienteRequestDTO clienteDTO) {

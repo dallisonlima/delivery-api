@@ -30,8 +30,11 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecif
     @Query("SELECT p FROM Pedido p LEFT JOIN FETCH p.itens WHERE p.id = :pedidoId AND p.cliente.id = :clienteId")
     Optional<Pedido> findByIdAndClienteIdWithItens(Long pedidoId, Long clienteId);
 
-    @Query("SELECT p.restaurante.nome, SUM(p.valorTotal) FROM Pedido p GROUP BY p.restaurante.nome")
+    @Query("SELECT p.restaurante.nome, SUM(p.valorTotal) FROM Pedido p GROUP BY p.restaurante.nome ORDER BY SUM(p.valorTotal) DESC")
     List<Object[]> findTotalVendasPorRestaurante();
+
+    @Query("SELECT p.cliente.nome, COUNT(p) as totalPedidos FROM Pedido p GROUP BY p.cliente.nome ORDER BY totalPedidos DESC")
+    List<Object[]> findClientesMaisAtivos();
 
     List<Pedido> findByValorTotalGreaterThan(BigDecimal valor);
 

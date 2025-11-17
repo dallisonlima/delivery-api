@@ -163,7 +163,7 @@ public class PedidoService {
         return total.add(restaurante.getTaxaEntrega());
     }
 
-    private boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {
+    public boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {
         switch (currentStatus) {
             case PENDENTE:
                 return newStatus == StatusPedido.CONFIRMADO || newStatus == StatusPedido.CANCELADO;
@@ -181,7 +181,7 @@ public class PedidoService {
         }
     }
 
-    private PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
+    public PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
         PedidoResponseDTO dto = new PedidoResponseDTO();
         dto.setId(pedido.getId());
         dto.setNumeroPedido(pedido.getNumeroPedido());
@@ -199,7 +199,7 @@ public class PedidoService {
         return dto;
     }
 
-    private ItemPedidoResponseDTO toItemPedidoResponseDTO(ItemPedido itemPedido) {
+    public ItemPedidoResponseDTO toItemPedidoResponseDTO(ItemPedido itemPedido) {
         ItemPedidoResponseDTO dto = new ItemPedidoResponseDTO();
         dto.setProdutoId(itemPedido.getProduto().getId());
         dto.setProdutoNome(itemPedido.getProduto().getNome());

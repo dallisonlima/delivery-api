@@ -5,9 +5,10 @@ import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteSpecs;
-import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,6 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,25 +52,23 @@ public class RestauranteService {
         return toRestauranteResponseDTO(restauranteSalvo);
     }
 
-    public void ativar(Long id) {
+    public RestauranteResponseDTO ativarOuDesativar(Long id, boolean ativo) {
         Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
-        restaurante.setAtivo(true);
-        restauranteRepository.save(restaurante);
-    }
-
-    public void inativar(Long id) {
-        Restaurante restaurante = restauranteRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
-        restaurante.setAtivo(false);
-        restauranteRepository.save(restaurante);
+        restaurante.setAtivo(ativo);
+        Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
+        return toRestauranteResponseDTO(restauranteSalvo);
     }
 
     public void deletar(Long id) {
         if (!restauranteRepository.existsById(id)) {
             throw new EntityNotFoundException("Restaurante não encontrado: " + id);
         }
-        restauranteRepository.deleteById(id);
+        try {
+            restauranteRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Não é possível deletar o restaurante pois ele possui pedidos associados. Considere inativá-lo.");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -95,8 +93,10 @@ public class RestauranteService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<RestauranteResponseDTO> buscarPorId(Long id) {
-        return restauranteRepository.findById(id).map(this::toRestauranteResponseDTO);
+    public RestauranteResponseDTO buscarPorId(Long id) {
+        return restauranteRepository.findById(id)
+                .map(this::toRestauranteResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
     }
     
     @Transactional(readOnly = true)
@@ -110,6 +110,7 @@ public class RestauranteService {
     public BigDecimal calcularTaxaEntrega(Long restauranteId, String cep) {
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + restauranteId));
+        // Lógica de cálculo de CEP pode ser adicionada aqui no futuro
         return restaurante.getTaxaEntrega();
     }
 

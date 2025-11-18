@@ -6,14 +6,14 @@ import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
-import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,18 +60,23 @@ public class ProdutoService {
         return toProdutoResponseDTO(produtoAtualizado);
     }
 
-    public void alterarDisponibilidade(Long produtoId) {
+    public ProdutoResponseDTO alterarDisponibilidade(Long produtoId) {
         Produto produto = produtoRepository.findById(produtoId)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + produtoId));
-        produto.setDisponivel(!produto.getDisponivel()); // Alterna o status
-        produtoRepository.save(produto);
+        produto.setDisponivel(!produto.getDisponivel());
+        Produto produtoAtualizado = produtoRepository.save(produto);
+        return toProdutoResponseDTO(produtoAtualizado);
     }
 
     public void deletar(Long id) {
         if (!produtoRepository.existsById(id)) {
             throw new EntityNotFoundException("Produto não encontrado: " + id);
         }
-        produtoRepository.deleteById(id);
+        try {
+            produtoRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Não é possível deletar o produto pois ele está associado a pedidos. Considere alterar sua disponibilidade.");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -82,10 +87,10 @@ public class ProdutoService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ProdutoResponseDTO> buscarPorId(Long id) {
+    public ProdutoResponseDTO buscarPorId(Long id) {
         return produtoRepository.findById(id)
-                .filter(Produto::getDisponivel)
-                .map(this::toProdutoResponseDTO);
+                .map(this::toProdutoResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
     }
 
     @Transactional(readOnly = true)

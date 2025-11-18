@@ -2,6 +2,7 @@ package com.delivery_api.Projeto.Delivery.API.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +16,9 @@ public class HealthController {
 
     @GetMapping("/api/health")
     @Operation(summary = "Verifica o status da aplicação", description = "Retorna o status da aplicação, data e hora, nome do serviço e versão do Java.")
-    @ApiResponse(responseCode = "200", description = "Aplicação está no ar")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Aplicação está no ar")
+    })
     public Map<String, String> health() {
         return Map.of(
                 "status", "UP",
@@ -27,7 +30,9 @@ public class HealthController {
 
     @GetMapping("/api/info")
     @Operation(summary = "Verifica as informações da aplicação", description = "Retorna as informações da aplicação, como nome, versão, desenvolvedor, versão do Java e framework.")
-    @ApiResponse(responseCode = "200", description = "Informações da aplicação retornadas com sucesso")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Informações da aplicação retornadas com sucesso")
+    })
     public AppInfo info() {
         return new AppInfo(
                 "Delivery Tech API",

@@ -9,6 +9,8 @@ import com.delivery_api.Projeto.Delivery.API.repository.*;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -107,7 +108,7 @@ public class PedidoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PedidoResponseDTO> listar(StatusPedido status, LocalDate data) {
+    public Page<PedidoResponseDTO> listar(StatusPedido status, LocalDate data, Pageable pageable) {
         Specification<Pedido> spec = Specification.where(null);
         if (status != null) {
             spec = spec.and(PedidoSpecs.comStatus(status));
@@ -115,14 +116,14 @@ public class PedidoService {
         if (data != null) {
             spec = spec.and(PedidoSpecs.comData(data));
         }
-        return pedidoRepository.findAll(spec).stream()
-                .map(this::toPedidoResponseDTO)
-                .collect(Collectors.toList());
+        return pedidoRepository.findAll(spec, pageable).map(this::toPedidoResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<PedidoResponseDTO> buscarPorId(Long id) {
-        return pedidoRepository.findById(id).map(this::toPedidoResponseDTO);
+    public PedidoResponseDTO buscarPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .map(this::toPedidoResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id));
     }
 
     @Transactional(readOnly = true)

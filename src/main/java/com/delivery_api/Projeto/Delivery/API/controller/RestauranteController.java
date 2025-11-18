@@ -10,9 +10,9 @@ import com.delivery_api.Projeto.Delivery.API.service.RestauranteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -38,23 +38,26 @@ public class RestauranteController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo restaurante", description = "Cadastra um novo restaurante com base nas informações fornecidas.")
-    @ApiResponse(responseCode = "201", description = "Restaurante cadastrado com sucesso")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Restaurante cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida")
+    })
     public ResponseEntity<RestauranteResponseDTO> cadastrar(@Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
         RestauranteResponseDTO novoRestaurante = restauranteService.cadastrar(restauranteDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoRestaurante);
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os restaurantes", description = "Lista todos os restaurantes, com a opção de filtrar por categoria e status.")
+    @Operation(summary = "Lista todos os restaurantes", description = "Lista todos os restaurantes, com a opção de filtrar por categoria e status de atividade.")
     @ApiResponse(responseCode = "200", description = "Restaurantes listados com sucesso")
     public ResponseEntity<List<RestauranteResponseDTO>> listar(
             @Parameter(description = "Categoria do restaurante") @RequestParam(required = false) String categoria,
-            @Parameter(description = "Status do restaurante") @RequestParam(required = false) Boolean ativo) {
+            @Parameter(description = "Status do restaurante (ativo/inativo)") @RequestParam(required = false) Boolean ativo) {
         return ResponseEntity.ok(restauranteService.listar(categoria, ativo));
     }
 
     @GetMapping("/disponiveis")
-    @Operation(summary = "Busca restaurantes disponíveis", description = "Busca todos os restaurantes que estão disponíveis para entrega.")
+    @Operation(summary = "Busca restaurantes disponíveis", description = "Busca todos os restaurantes que estão ativos.")
     @ApiResponse(responseCode = "200", description = "Restaurantes encontrados com sucesso")
     public ResponseEntity<List<RestauranteResponseDTO>> buscarRestaurantesDisponiveis() {
         return ResponseEntity.ok(restauranteService.buscarRestaurantesDisponiveis());
@@ -62,17 +65,22 @@ public class RestauranteController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Busca um restaurante por ID", description = "Busca um restaurante específico pelo seu ID.")
-    @ApiResponse(responseCode = "200", description = "Restaurante encontrado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Restaurante encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
     public ResponseEntity<RestauranteResponseDTO> buscarPorId(@Parameter(description = "ID do restaurante") @PathVariable Long id) {
-        return restauranteService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        RestauranteResponseDTO restaurante = restauranteService.buscarPorId(id);
+        return ResponseEntity.ok(restaurante);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualiza um restaurante", description = "Atualiza um restaurante específico com base nas informações fornecidas.")
-    @ApiResponse(responseCode = "200", description = "Restaurante atualizado com sucesso")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Restaurante atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
     public ResponseEntity<RestauranteResponseDTO> atualizar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
         RestauranteResponseDTO restauranteAtualizado = restauranteService.atualizar(id, restauranteDTO);
         return ResponseEntity.ok(restauranteAtualizado);
@@ -80,19 +88,14 @@ public class RestauranteController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Deleta um restaurante", description = "Deleta um restaurante específico.")
-    @ApiResponse(responseCode = "204", description = "Restaurante deletado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
-    @ApiResponse(responseCode = "409", description = "Não é possível deletar o restaurante pois ele possui pedidos associados")
-    public ResponseEntity<String> deletar(@Parameter(description = "ID do restaurante") @PathVariable Long id) {
-        try {
-            restauranteService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Não é possível deletar o restaurante pois ele possui pedidos associados. Considere inativá-lo.");
-        }
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Restaurante deletado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado"),
+            @ApiResponse(responseCode = "409", description = "Não é possível deletar o restaurante pois ele possui pedidos associados")
+    })
+    public ResponseEntity<Void> deletar(@Parameter(description = "ID do restaurante") @PathVariable Long id) {
+        restauranteService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/categoria/{categoria}")
@@ -102,36 +105,26 @@ public class RestauranteController {
         return ResponseEntity.ok(restauranteService.buscarPorCategoria(categoria));
     }
 
-    @GetMapping("/{restauranteId}/taxa-entrega/{cep}")
-    @Operation(summary = "Calcula a taxa de entrega", description = "Calcula a taxa de entrega de um restaurante para um CEP específico.")
-    @ApiResponse(responseCode = "200", description = "Taxa de entrega calculada com sucesso")
-    @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
-    public ResponseEntity<BigDecimal> calcularTaxaEntrega(@Parameter(description = "ID do restaurante") @PathVariable Long restauranteId, @Parameter(description = "CEP de entrega") @PathVariable String cep) {
-        try {
-            BigDecimal taxa = restauranteService.calcularTaxaEntrega(restauranteId, cep);
-            return ResponseEntity.ok(taxa);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{restauranteId}/taxa-entrega")
+    @Operation(summary = "Retorna a taxa de entrega", description = "Retorna a taxa de entrega de um restaurante.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Taxa de entrega retornada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
+    public ResponseEntity<BigDecimal> calcularTaxaEntrega(@Parameter(description = "ID do restaurante") @PathVariable Long restauranteId) {
+        BigDecimal taxa = restauranteService.calcularTaxaEntrega(restauranteId, null); // CEP não é mais usado aqui
+        return ResponseEntity.ok(taxa);
     }
 
     @PatchMapping("/{id}/status")
     @Operation(summary = "Ativa ou desativa um restaurante", description = "Ativa ou desativa um restaurante específico.")
-    @ApiResponse(responseCode = "204", description = "Status do restaurante alterado com sucesso")
-    public ResponseEntity<Void> ativarOuDesativar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Parameter(description = "Novo status do restaurante") @RequestParam boolean ativo) {
-        if (ativo) {
-            restauranteService.ativar(id);
-        } else {
-            restauranteService.inativar(id);
-        }
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/proximos/{cep}")
-    @Operation(summary = "Busca restaurantes próximos", description = "Busca todos os restaurantes próximos a um CEP específico.")
-    @ApiResponse(responseCode = "200", description = "Restaurantes encontrados com sucesso")
-    public ResponseEntity<List<RestauranteResponseDTO>> buscarProximos(@Parameter(description = "CEP de entrega") @PathVariable String cep) {
-        return ResponseEntity.ok(List.of());
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status do restaurante alterado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
+    public ResponseEntity<RestauranteResponseDTO> ativarOuDesativar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Parameter(description = "Novo status do restaurante") @RequestParam boolean ativo) {
+        RestauranteResponseDTO restauranteAtualizado = restauranteService.ativarOuDesativar(id, ativo);
+        return ResponseEntity.ok(restauranteAtualizado);
     }
 
     @GetMapping("/{restauranteId}/produtos")

@@ -4,14 +4,13 @@ import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
-import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,13 +37,17 @@ public class ClienteService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ClienteResponseDTO> buscarPorId(Long id) {
-        return clienteRepository.findById(id).map(this::toClienteResponseDTO);
+    public ClienteResponseDTO buscarPorId(Long id) {
+        return clienteRepository.findById(id)
+                .map(this::toClienteResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
-    public Optional<ClienteResponseDTO> buscarPorEmail(String email) {
-        return clienteRepository.findByEmail(email).map(this::toClienteResponseDTO);
+    public ClienteResponseDTO buscarPorEmail(String email) {
+        return clienteRepository.findByEmail(email)
+                .map(this::toClienteResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com o email: " + email));
     }
 
     @Transactional(readOnly = true)
@@ -72,17 +75,19 @@ public class ClienteService {
         return toClienteResponseDTO(clienteSalvo);
     }
 
-    public void ativarDesativarCliente(Long id) {
+    public ClienteResponseDTO ativarDesativarCliente(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
-        cliente.setAtivo(!cliente.getAtivo()); // Alterna o status
-        clienteRepository.save(cliente);
+        cliente.setAtivo(!cliente.getAtivo());
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return toClienteResponseDTO(clienteSalvo);
     }
 
     @Transactional(readOnly = true)
-    public List<Cliente> buscarPorNome(String nome) {
-        // Este método ainda retorna Cliente, se precisar de DTO, me avise.
-        return clienteRepository.findByNomeContainingIgnoreCase(nome);
+    public List<ClienteResponseDTO> buscarPorNome(String nome) {
+        return clienteRepository.findByNomeContainingIgnoreCase(nome).stream()
+                .map(this::toClienteResponseDTO)
+                .collect(Collectors.toList());
     }
 
     private ClienteResponseDTO toClienteResponseDTO(Cliente cliente) {

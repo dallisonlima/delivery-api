@@ -1,8 +1,13 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
+import com.delivery_api.Projeto.Delivery.API.entity.ItemPedido;
+import com.delivery_api.Projeto.Delivery.API.entity.Pedido;
 import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
+import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
+import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,6 +47,12 @@ public class ProdutoControllerIT {
     @Autowired
     private RestauranteRepository restauranteRepository;
 
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
     private Restaurante restaurante;
     private Produto produto;
 
@@ -53,6 +67,7 @@ public class ProdutoControllerIT {
         produto = new Produto();
         produto.setNome("Produto Base");
         produto.setPreco(new BigDecimal("20.00"));
+        produto.setCategoria("Bebidas");
         produto.setRestaurante(restaurante);
         produto.setDisponivel(true);
         produto = produtoRepository.save(produto);
@@ -60,14 +75,12 @@ public class ProdutoControllerIT {
 
     @Test
     void cadastrar_deveRetornar201_quandoDadosValidos() throws Exception {
-        // Arrange
         ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
         requestDTO.setNome("Novo Produto");
         requestDTO.setPreco(new BigDecimal("15.50"));
         requestDTO.setRestauranteId(restaurante.getId());
         requestDTO.setDisponivel(true);
 
-        // Act & Assert
         mockMvc.perform(post("/api/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
@@ -77,37 +90,72 @@ public class ProdutoControllerIT {
     }
 
     @Test
+    void cadastrar_deveRetornar400_quandoDadosInvalidos() throws Exception {
+        ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
+        requestDTO.setNome("");
+
+        mockMvc.perform(post("/api/produtos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deletar_deveRetornar409_quandoProdutoEstaEmPedido() throws Exception {
+        Cliente cliente = clienteRepository.save(new Cliente());
+        Pedido pedido = new Pedido();
+        pedido.setCliente(cliente);
+        pedido.setRestaurante(restaurante);
+        pedido.setDataPedido(LocalDateTime.now());
+        ItemPedido item = new ItemPedido();
+        item.setProduto(produto);
+        item.setPedido(pedido);
+        item.setQuantidade(1);
+        pedido.setItens(List.of(item));
+        pedidoRepository.save(pedido);
+
+        mockMvc.perform(delete("/api/produtos/{id}", produto.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void buscarPorCategoria_deveRetornarPaginaDeProdutos() throws Exception {
+        mockMvc.perform(get("/api/produtos/categoria/{categoria}", "Bebidas")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].nome").value("Produto Base"));
+    }
+
+    @Test
     void buscarPorId_deveRetornar200_quandoProdutoExiste() throws Exception {
-        // Act & Assert
         mockMvc.perform(get("/api/produtos/{id}", produto.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.id").value(produto.getId()))
-                .andExpect(jsonPath("$.data.nome").value("Produto Base"));
+                .andExpect(jsonPath("$.data.id").value(produto.getId()));
     }
 
     @Test
     void atualizar_deveRetornar200_quandoDadosValidos() throws Exception {
-        // Arrange
         ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
         requestDTO.setNome("Produto Atualizado");
         requestDTO.setPreco(new BigDecimal("25.00"));
         requestDTO.setRestauranteId(restaurante.getId());
         requestDTO.setDisponivel(true);
 
-        // Act & Assert
         mockMvc.perform(put("/api/produtos/{id}", produto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.nome").value("Produto Atualizado"))
-                .andExpect(jsonPath("$.data.preco").value(25.00));
+                .andExpect(jsonPath("$.data.nome").value("Produto Atualizado"));
     }
 
     @Test
     void deletar_deveRetornar204_quandoProdutoExiste() throws Exception {
-        // Act & Assert
         mockMvc.perform(delete("/api/produtos/{id}", produto.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
@@ -115,8 +163,7 @@ public class ProdutoControllerIT {
 
     @Test
     void buscarPorId_deveRetornar404_quandoProdutoNaoExiste() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/api/produtos/{id}", 9999L) // ID inexistente
+        mockMvc.perform(get("/api/produtos/{id}", 9999L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

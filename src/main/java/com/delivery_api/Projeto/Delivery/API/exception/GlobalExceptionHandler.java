@@ -27,12 +27,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.CONFLICT; // Default to 409
+        if (ex.getMessage().contains("Transição de status inválida")) {
+            status = HttpStatus.BAD_REQUEST; // Use 400 for invalid status transitions
+        }
+        
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                status,
                 ex.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, status);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

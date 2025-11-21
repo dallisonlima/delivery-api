@@ -38,11 +38,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.UNPROCESSABLE_ENTITY, // Alterado para 422
                 ex.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

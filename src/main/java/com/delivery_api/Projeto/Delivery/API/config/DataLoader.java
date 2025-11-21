@@ -98,7 +98,7 @@ public class DataLoader implements CommandLineRunner {
         restauranteRepository.saveAll(Arrays.asList(rest1, rest2));
 
         // Produtos
-        Produto prod1 = new Produto();
+        Produto prod1 = w Produto();
         prod1.setNome("Pizza Margherita");
         prod1.setDescricao("Molho, muçarela e manjericão");
         prod1.setPreco(new BigDecimal("45.00"));

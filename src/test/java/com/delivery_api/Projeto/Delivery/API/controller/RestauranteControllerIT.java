@@ -78,6 +78,15 @@ public class RestauranteControllerIT {
         requestDTO.setNome("Restaurante Novo");
         requestDTO.setTaxaEntrega(new BigDecimal("5.00"));
         requestDTO.setCategoria("Brasileira");
+        requestDTO.setTelefone("11999998888");
+        requestDTO.setCep("12345-678");
+        requestDTO.setLogradouro("Rua");
+        requestDTO.setNumero("123");
+        requestDTO.setBairro("Bairro");
+        requestDTO.setCidade("Cidade");
+        requestDTO.setEstado("SP");
+        requestDTO.setTempoDeEntrega(30);
+        requestDTO.setHorarioFuncionamento("18:00-23:00");
 
         mockMvc.perform(post("/api/restaurantes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,6 +100,28 @@ public class RestauranteControllerIT {
     void cadastrar_deveRetornar400_quandoDadosInvalidos() throws Exception {
         RestauranteRequestDTO requestDTO = new RestauranteRequestDTO();
         requestDTO.setNome("");
+
+        mockMvc.perform(post("/api/restaurantes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void cadastrar_deveRetornar400_quandoTelefoneInvalido() throws Exception {
+        RestauranteRequestDTO requestDTO = new RestauranteRequestDTO();
+        requestDTO.setNome("Restaurante com Telefone Inválido");
+        requestDTO.setTaxaEntrega(new BigDecimal("5.00"));
+        requestDTO.setCategoria("Brasileira");
+        requestDTO.setTelefone("123"); // Telefone inválido
+        requestDTO.setCep("12345-678");
+        requestDTO.setLogradouro("Rua");
+        requestDTO.setNumero("123");
+        requestDTO.setBairro("Bairro");
+        requestDTO.setCidade("Cidade");
+        requestDTO.setEstado("SP");
+        requestDTO.setTempoDeEntrega(30);
+        requestDTO.setHorarioFuncionamento("18:00-23:00");
 
         mockMvc.perform(post("/api/restaurantes")
                         .contentType(MediaType.APPLICATION_JSON)

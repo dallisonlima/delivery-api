@@ -4,7 +4,6 @@ import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,7 +97,7 @@ public class DataLoader implements CommandLineRunner {
         restauranteRepository.saveAll(Arrays.asList(rest1, rest2));
 
         // Produtos
-        Produto prod1 = w Produto();
+        Produto prod1 = new Produto();
         prod1.setNome("Pizza Margherita");
         prod1.setDescricao("Molho, muçarela e manjericão");
         prod1.setPreco(new BigDecimal("45.00"));

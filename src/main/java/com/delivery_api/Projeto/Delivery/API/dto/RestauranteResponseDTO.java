@@ -18,14 +18,20 @@ public class RestauranteResponseDTO {
     @Schema(description = "Taxa de entrega do restaurante", example = "5.00")
     private BigDecimal taxaEntrega;
 
+    @Schema(description = "Tempo de entrega estimado em minutos", example = "30")
+    private Integer tempoDeEntrega;
+
+    @Schema(description = "Horário de funcionamento", example = "18:00-23:00")
+    private String horarioFuncionamento;
+
     @Schema(description = "Categoria do restaurante", example = "Brasileira")
     private String categoria;
 
     @Schema(description = "Indica se o restaurante está ativo", example = "true")
     private Boolean ativo;
 
-    @Schema(description = "Endereço do restaurante", example = "Rua das Flores, 123, São Paulo, SP")
-    private String endereco;
+    @Schema(description = "Endereço do restaurante")
+    private EnderecoDTO endereco;
 
     @Schema(description = "Avaliação do restaurante", example = "4.5")
     private Double avaliacao;

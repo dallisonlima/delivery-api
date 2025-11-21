@@ -16,11 +16,11 @@ public class ClienteResponseDTO {
     @Schema(description = "Email do cliente", example = "joao.silva@example.com")
     private String email;
 
-    @Schema(description = "Telefone do cliente", example = "(11) 99999-9999")
+    @Schema(description = "Telefone do cliente", example = "11987654321")
     private String telefone;
 
-    @Schema(description = "Endereço do cliente", example = "Rua das Flores, 123, São Paulo, SP")
-    private String endereco;
+    @Schema(description = "Endereço do cliente")
+    private EnderecoDTO endereco;
 
     @Schema(description = "Indica se o cliente está ativo", example = "true")
     private Boolean ativo;

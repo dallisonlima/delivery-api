@@ -1,7 +1,9 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
+import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteSpecs;
@@ -29,10 +31,21 @@ public class RestauranteService {
         Restaurante restaurante = new Restaurante();
         restaurante.setNome(restauranteDTO.getNome());
         restaurante.setTaxaEntrega(restauranteDTO.getTaxaEntrega());
+        restaurante.setTempoDeEntrega(restauranteDTO.getTempoDeEntrega());
+        restaurante.setHorarioFuncionamento(restauranteDTO.getHorarioFuncionamento());
         restaurante.setCategoria(restauranteDTO.getCategoria());
-        restaurante.setEndereco(restauranteDTO.getEndereco());
         restaurante.setTelefone(restauranteDTO.getTelefone());
         restaurante.setAtivo(true);
+
+        Endereco endereco = new Endereco();
+        endereco.setCep(restauranteDTO.getCep());
+        endereco.setLogradouro(restauranteDTO.getLogradouro());
+        endereco.setNumero(restauranteDTO.getNumero());
+        endereco.setComplemento(restauranteDTO.getComplemento());
+        endereco.setBairro(restauranteDTO.getBairro());
+        endereco.setCidade(restauranteDTO.getCidade());
+        endereco.setEstado(restauranteDTO.getEstado());
+        restaurante.setEndereco(endereco);
 
         Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
         return toRestauranteResponseDTO(restauranteSalvo);
@@ -44,9 +57,20 @@ public class RestauranteService {
 
         restaurante.setNome(restauranteDTO.getNome());
         restaurante.setTaxaEntrega(restauranteDTO.getTaxaEntrega());
+        restaurante.setTempoDeEntrega(restauranteDTO.getTempoDeEntrega());
+        restaurante.setHorarioFuncionamento(restauranteDTO.getHorarioFuncionamento());
         restaurante.setCategoria(restauranteDTO.getCategoria());
-        restaurante.setEndereco(restauranteDTO.getEndereco());
         restaurante.setTelefone(restauranteDTO.getTelefone());
+
+        Endereco endereco = restaurante.getEndereco() != null ? restaurante.getEndereco() : new Endereco();
+        endereco.setCep(restauranteDTO.getCep());
+        endereco.setLogradouro(restauranteDTO.getLogradouro());
+        endereco.setNumero(restauranteDTO.getNumero());
+        endereco.setComplemento(restauranteDTO.getComplemento());
+        endereco.setBairro(restauranteDTO.getBairro());
+        endereco.setCidade(restauranteDTO.getCidade());
+        endereco.setEstado(restauranteDTO.getEstado());
+        restaurante.setEndereco(endereco);
 
         Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
         return toRestauranteResponseDTO(restauranteSalvo);
@@ -104,7 +128,6 @@ public class RestauranteService {
     public BigDecimal calcularTaxaEntrega(Long restauranteId, String cep) {
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + restauranteId));
-        // Lógica de cálculo de CEP pode ser adicionada aqui no futuro
         return restaurante.getTaxaEntrega();
     }
 
@@ -113,11 +136,25 @@ public class RestauranteService {
         dto.setId(restaurante.getId());
         dto.setNome(restaurante.getNome());
         dto.setTaxaEntrega(restaurante.getTaxaEntrega());
+        dto.setTempoDeEntrega(restaurante.getTempoDeEntrega());
+        dto.setHorarioFuncionamento(restaurante.getHorarioFuncionamento());
         dto.setCategoria(restaurante.getCategoria());
         dto.setAtivo(restaurante.getAtivo());
-        dto.setEndereco(restaurante.getEndereco());
         dto.setAvaliacao(restaurante.getAvaliacao());
         dto.setTelefone(restaurante.getTelefone());
+
+        if (restaurante.getEndereco() != null) {
+            EnderecoDTO enderecoDTO = new EnderecoDTO();
+            enderecoDTO.setCep(restaurante.getEndereco().getCep());
+            enderecoDTO.setLogradouro(restaurante.getEndereco().getLogradouro());
+            enderecoDTO.setNumero(restaurante.getEndereco().getNumero());
+            enderecoDTO.setComplemento(restaurante.getEndereco().getComplemento());
+            enderecoDTO.setBairro(restaurante.getEndereco().getBairro());
+            enderecoDTO.setCidade(restaurante.getEndereco().getCidade());
+            enderecoDTO.setEstado(restaurante.getEndereco().getEstado());
+            dto.setEndereco(enderecoDTO);
+        }
+        
         return dto;
     }
 }

@@ -2,7 +2,9 @@ package com.delivery_api.Projeto.Delivery.API.service;
 
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
+import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
@@ -28,8 +30,17 @@ public class ClienteService {
         cliente.setNome(clienteDTO.getNome());
         cliente.setEmail(clienteDTO.getEmail());
         cliente.setTelefone(clienteDTO.getTelefone());
-        cliente.setEndereco(clienteDTO.getEndereco());
         cliente.setAtivo(true);
+
+        Endereco endereco = new Endereco();
+        endereco.setCep(clienteDTO.getCep());
+        endereco.setLogradouro(clienteDTO.getLogradouro());
+        endereco.setNumero(clienteDTO.getNumero());
+        endereco.setComplemento(clienteDTO.getComplemento());
+        endereco.setBairro(clienteDTO.getBairro());
+        endereco.setCidade(clienteDTO.getCidade());
+        endereco.setEstado(clienteDTO.getEstado());
+        cliente.setEndereco(endereco);
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
         return toClienteResponseDTO(clienteSalvo);
@@ -54,19 +65,28 @@ public class ClienteService {
         return clienteRepository.findByAtivoTrue(pageable).map(this::toClienteResponseDTO);
     }
 
-    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteAtualizadoDTO) {
+    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteDTO) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
 
-        if (!cliente.getEmail().equals(clienteAtualizadoDTO.getEmail()) &&
-                clienteRepository.existsByEmail(clienteAtualizadoDTO.getEmail())) {
-            throw new BusinessException("Email já cadastrado: " + clienteAtualizadoDTO.getEmail());
+        if (!cliente.getEmail().equals(clienteDTO.getEmail()) &&
+                clienteRepository.existsByEmail(clienteDTO.getEmail())) {
+            throw new BusinessException("Email já cadastrado: " + clienteDTO.getEmail());
         }
 
-        cliente.setNome(clienteAtualizadoDTO.getNome());
-        cliente.setEmail(clienteAtualizadoDTO.getEmail());
-        cliente.setTelefone(clienteAtualizadoDTO.getTelefone());
-        cliente.setEndereco(clienteAtualizadoDTO.getEndereco());
+        cliente.setNome(clienteDTO.getNome());
+        cliente.setEmail(clienteDTO.getEmail());
+        cliente.setTelefone(clienteDTO.getTelefone());
+
+        Endereco endereco = cliente.getEndereco() != null ? cliente.getEndereco() : new Endereco();
+        endereco.setCep(clienteDTO.getCep());
+        endereco.setLogradouro(clienteDTO.getLogradouro());
+        endereco.setNumero(clienteDTO.getNumero());
+        endereco.setComplemento(clienteDTO.getComplemento());
+        endereco.setBairro(clienteDTO.getBairro());
+        endereco.setCidade(clienteDTO.getCidade());
+        endereco.setEstado(clienteDTO.getEstado());
+        cliente.setEndereco(endereco);
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
         return toClienteResponseDTO(clienteSalvo);
@@ -92,8 +112,20 @@ public class ClienteService {
         dto.setNome(cliente.getNome());
         dto.setEmail(cliente.getEmail());
         dto.setTelefone(cliente.getTelefone());
-        dto.setEndereco(cliente.getEndereco());
         dto.setAtivo(cliente.getAtivo());
+
+        if (cliente.getEndereco() != null) {
+            EnderecoDTO enderecoDTO = new EnderecoDTO();
+            enderecoDTO.setCep(cliente.getEndereco().getCep());
+            enderecoDTO.setLogradouro(cliente.getEndereco().getLogradouro());
+            enderecoDTO.setNumero(cliente.getEndereco().getNumero());
+            enderecoDTO.setComplemento(cliente.getEndereco().getComplemento());
+            enderecoDTO.setBairro(cliente.getEndereco().getBairro());
+            enderecoDTO.setCidade(cliente.getEndereco().getCidade());
+            enderecoDTO.setEstado(cliente.getEndereco().getEstado());
+            dto.setEndereco(enderecoDTO);
+        }
+
         return dto;
     }
 }

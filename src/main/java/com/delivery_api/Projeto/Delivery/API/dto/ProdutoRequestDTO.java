@@ -1,5 +1,6 @@
 package com.delivery_api.Projeto.Delivery.API.dto;
 
+import com.delivery_api.Projeto.Delivery.API.validation.ValidCategoria;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -27,7 +28,8 @@ public class ProdutoRequestDTO {
     private BigDecimal preco;
 
     @NotBlank(message = "Categoria do produto é obrigatória")
-    @Schema(description = "Categoria do produto", example = "Pizzas")
+    @ValidCategoria
+    @Schema(description = "Categoria do produto", example = "Pizza")
     private String categoria;
 
     @NotNull(message = "Disponibilidade do produto é obrigatória")

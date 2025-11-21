@@ -1,5 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.dto;
 
+import com.delivery_api.Projeto.Delivery.API.validation.ValidCEP;
+import com.delivery_api.Projeto.Delivery.API.validation.ValidTelefone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,10 +23,36 @@ public class ClienteRequestDTO {
     private String email;
 
     @NotBlank(message = "Telefone é obrigatório")
-    @Schema(description = "Telefone do cliente", example = "(11) 99999-9999")
+    @ValidTelefone
+    @Schema(description = "Telefone do cliente (apenas números)", example = "11987654321")
     private String telefone;
 
-    @NotBlank(message = "Endereço é obrigatório")
-    @Schema(description = "Endereço do cliente", example = "Rua das Flores, 123, São Paulo, SP")
-    private String endereco;
+    @NotBlank(message = "CEP é obrigatório")
+    @ValidCEP
+    @Schema(description = "CEP do cliente", example = "12345-678")
+    private String cep;
+
+    @NotBlank(message = "Logradouro é obrigatório")
+    @Schema(description = "Logradouro do endereço", example = "Rua das Flores")
+    private String logradouro;
+
+    @NotBlank(message = "Número é obrigatório")
+    @Schema(description = "Número do endereço", example = "123")
+    private String numero;
+
+    @Schema(description = "Complemento do endereço", example = "Apto 101")
+    private String complemento;
+
+    @NotBlank(message = "Bairro é obrigatório")
+    @Schema(description = "Bairro do endereço", example = "Centro")
+    private String bairro;
+
+    @NotBlank(message = "Cidade é obrigatória")
+    @Schema(description = "Cidade do endereço", example = "São Paulo")
+    private String cidade;
+
+    @NotBlank(message = "Estado é obrigatório")
+    @Size(min = 2, max = 2, message = "Estado deve ter 2 caracteres")
+    @Schema(description = "UF do estado", example = "SP")
+    private String estado;
 }

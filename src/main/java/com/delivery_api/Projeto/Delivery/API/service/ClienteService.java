@@ -7,11 +7,10 @@ import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -51,10 +50,8 @@ public class ClienteService {
     }
 
     @Transactional(readOnly = true)
-    public List<ClienteResponseDTO> listarAtivos() {
-        return clienteRepository.findByAtivoTrue().stream()
-                .map(this::toClienteResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ClienteResponseDTO> listarAtivos(Pageable pageable) {
+        return clienteRepository.findByAtivoTrue(pageable).map(this::toClienteResponseDTO);
     }
 
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteAtualizadoDTO) {
@@ -84,10 +81,9 @@ public class ClienteService {
     }
 
     @Transactional(readOnly = true)
-    public List<ClienteResponseDTO> buscarPorNome(String nome) {
-        return clienteRepository.findByNomeContainingIgnoreCase(nome).stream()
-                .map(this::toClienteResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ClienteResponseDTO> buscarPorNome(String nome, Pageable pageable) {
+        return clienteRepository.findByNomeContainingIgnoreCase(nome, pageable)
+                .map(this::toClienteResponseDTO);
     }
 
     private ClienteResponseDTO toClienteResponseDTO(Cliente cliente) {

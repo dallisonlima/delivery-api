@@ -2,6 +2,8 @@ package com.delivery_api.Projeto.Delivery.API.controller;
 
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ApiResponseWrapper;
+import com.delivery_api.Projeto.Delivery.API.dto.response.PagedResponseWrapper;
 import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,12 +11,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/produtos")
@@ -32,9 +35,9 @@ public class ProdutoController {
             @ApiResponse(responseCode = "400", description = "Requisição inválida"),
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<ProdutoResponseDTO> cadastrar(@Validated @RequestBody ProdutoRequestDTO produtoDTO) {
+    public ResponseEntity<ApiResponseWrapper<ProdutoResponseDTO>> cadastrar(@Validated @RequestBody ProdutoRequestDTO produtoDTO) {
         ProdutoResponseDTO novoProduto = produtoService.cadastrar(produtoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(novoProduto, "Produto cadastrado com sucesso."));
     }
 
     @PutMapping("/{id}")
@@ -44,9 +47,9 @@ public class ProdutoController {
             @ApiResponse(responseCode = "400", description = "Requisição inválida"),
             @ApiResponse(responseCode = "404", description = "Produto ou Restaurante não encontrado")
     })
-    public ResponseEntity<ProdutoResponseDTO> atualizar(@Parameter(description = "ID do produto") @PathVariable Long id, @Validated @RequestBody ProdutoRequestDTO produtoDTO) {
+    public ResponseEntity<ApiResponseWrapper<ProdutoResponseDTO>> atualizar(@Parameter(description = "ID do produto") @PathVariable Long id, @Validated @RequestBody ProdutoRequestDTO produtoDTO) {
         ProdutoResponseDTO produtoAtualizado = produtoService.atualizar(id, produtoDTO);
-        return ResponseEntity.ok(produtoAtualizado);
+        return ResponseEntity.ok(ApiResponseWrapper.success(produtoAtualizado, "Produto atualizado com sucesso."));
     }
 
     @GetMapping("/{id}")
@@ -55,16 +58,19 @@ public class ProdutoController {
             @ApiResponse(responseCode = "200", description = "Produto encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Produto não encontrado")
     })
-    public ResponseEntity<ProdutoResponseDTO> buscarPorId(@Parameter(description = "ID do produto") @PathVariable Long id) {
+    public ResponseEntity<ApiResponseWrapper<ProdutoResponseDTO>> buscarPorId(@Parameter(description = "ID do produto") @PathVariable Long id) {
         ProdutoResponseDTO produto = produtoService.buscarPorId(id);
-        return ResponseEntity.ok(produto);
+        return ResponseEntity.ok(ApiResponseWrapper.success(produto, "Produto encontrado com sucesso."));
     }
 
     @GetMapping("/categoria/{categoria}")
-    @Operation(summary = "Busca produtos por categoria", description = "Busca todos os produtos de uma categoria específica.")
+    @Operation(summary = "Busca produtos por categoria", description = "Busca todos os produtos de uma categoria específica de forma paginada.")
     @ApiResponse(responseCode = "200", description = "Produtos encontrados com sucesso")
-    public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutosPorCategoria(@Parameter(description = "Nome da categoria") @PathVariable String categoria) {
-        return ResponseEntity.ok(produtoService.buscarProdutosPorCategoria(categoria));
+    public ResponseEntity<PagedResponseWrapper<ProdutoResponseDTO>> buscarProdutosPorCategoria(
+            @Parameter(description = "Nome da categoria") @PathVariable String categoria,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<ProdutoResponseDTO> produtos = produtoService.buscarProdutosPorCategoria(categoria, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(produtos));
     }
 
     @DeleteMapping("/{id}")
@@ -85,15 +91,18 @@ public class ProdutoController {
             @ApiResponse(responseCode = "200", description = "Disponibilidade do produto alterada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Produto não encontrado")
     })
-    public ResponseEntity<ProdutoResponseDTO> alterarDisponibilidade(@Parameter(description = "ID do produto") @PathVariable Long id) {
+    public ResponseEntity<ApiResponseWrapper<ProdutoResponseDTO>> alterarDisponibilidade(@Parameter(description = "ID do produto") @PathVariable Long id) {
         ProdutoResponseDTO produtoAtualizado = produtoService.alterarDisponibilidade(id);
-        return ResponseEntity.ok(produtoAtualizado);
+        return ResponseEntity.ok(ApiResponseWrapper.success(produtoAtualizado, "Disponibilidade do produto alterada com sucesso."));
     }
 
     @GetMapping("/buscar")
-    @Operation(summary = "Busca produtos por nome", description = "Busca todos os produtos que contenham o nome informado.")
+    @Operation(summary = "Busca produtos por nome", description = "Busca todos os produtos que contenham o nome informado de forma paginada.")
     @ApiResponse(responseCode = "200", description = "Produtos encontrados com sucesso")
-    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorNome(@Parameter(description = "Nome do produto") @RequestParam String nome) {
-        return ResponseEntity.ok(produtoService.buscarPorNome(nome));
+    public ResponseEntity<PagedResponseWrapper<ProdutoResponseDTO>> buscarPorNome(
+            @Parameter(description = "Nome do produto") @RequestParam String nome,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<ProdutoResponseDTO> produtos = produtoService.buscarPorNome(nome, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(produtos));
     }
 }

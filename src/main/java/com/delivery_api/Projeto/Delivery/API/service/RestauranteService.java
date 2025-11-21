@@ -9,14 +9,14 @@ import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -72,7 +72,7 @@ public class RestauranteService {
     }
 
     @Transactional(readOnly = true)
-    public List<RestauranteResponseDTO> listar(String categoria, Boolean ativo) {
+    public Page<RestauranteResponseDTO> listar(String categoria, Boolean ativo, Pageable pageable) {
         Specification<Restaurante> spec = Specification.where(null);
         if (StringUtils.hasText(categoria)) {
             spec = spec.and(RestauranteSpecs.comCategoria(categoria));
@@ -80,16 +80,12 @@ public class RestauranteService {
         if (ativo != null) {
             spec = spec.and(RestauranteSpecs.comAtivo(ativo));
         }
-        return restauranteRepository.findAll(spec).stream()
-                .map(this::toRestauranteResponseDTO)
-                .collect(Collectors.toList());
+        return restauranteRepository.findAll(spec, pageable).map(this::toRestauranteResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<RestauranteResponseDTO> buscarRestaurantesDisponiveis() {
-        return restauranteRepository.findByAtivoTrue().stream()
-                .map(this::toRestauranteResponseDTO)
-                .collect(Collectors.toList());
+    public Page<RestauranteResponseDTO> buscarRestaurantesDisponiveis(Pageable pageable) {
+        return restauranteRepository.findByAtivoTrue(pageable).map(this::toRestauranteResponseDTO);
     }
 
     @Transactional(readOnly = true)
@@ -100,10 +96,8 @@ public class RestauranteService {
     }
     
     @Transactional(readOnly = true)
-    public List<RestauranteResponseDTO> buscarPorCategoria(String categoria) {
-        return restauranteRepository.findByCategoria(categoria).stream()
-                .map(this::toRestauranteResponseDTO)
-                .collect(Collectors.toList());
+    public Page<RestauranteResponseDTO> buscarPorCategoria(String categoria, Pageable pageable) {
+        return restauranteRepository.findByCategoria(categoria, pageable).map(this::toRestauranteResponseDTO);
     }
 
     @Transactional(readOnly = true)

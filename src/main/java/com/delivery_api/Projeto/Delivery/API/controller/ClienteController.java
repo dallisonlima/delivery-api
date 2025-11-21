@@ -4,6 +4,7 @@ import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.response.ApiResponseWrapper;
+import com.delivery_api.Projeto.Delivery.API.dto.response.PagedResponseWrapper;
 import com.delivery_api.Projeto.Delivery.API.service.ClienteService;
 import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,13 +13,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -45,11 +46,11 @@ public class ClienteController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os clientes ativos", description = "Lista todos os clientes que estão com o status ativo.")
+    @Operation(summary = "Lista todos os clientes ativos de forma paginada", description = "Lista todos os clientes que estão com o status ativo.")
     @ApiResponse(responseCode = "200", description = "Clientes listados com sucesso")
-    public ResponseEntity<ApiResponseWrapper<List<ClienteResponseDTO>>> listarAtivos() {
-        List<ClienteResponseDTO> clientes = clienteService.listarAtivos();
-        return ResponseEntity.ok(ApiResponseWrapper.success(clientes, "Clientes listados com sucesso."));
+    public ResponseEntity<PagedResponseWrapper<ClienteResponseDTO>> listarAtivos(@PageableDefault(size = 10) Pageable pageable) {
+        Page<ClienteResponseDTO> clientes = clienteService.listarAtivos(pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(clientes));
     }
 
     @GetMapping("/{id}")
@@ -75,11 +76,13 @@ public class ClienteController {
     }
 
     @GetMapping("/buscar")
-    @Operation(summary = "Buscar clientes por nome", description = "Recupera uma lista de clientes que correspondem ao nome fornecido")
+    @Operation(summary = "Buscar clientes por nome de forma paginada", description = "Recupera uma lista de clientes que correspondem ao nome fornecido.")
     @ApiResponse(responseCode = "200", description = "Clientes encontrados")
-    public ResponseEntity<ApiResponseWrapper<List<ClienteResponseDTO>>> buscarPorNome(@Param("nome") String nome) {
-        List<ClienteResponseDTO> clientes = clienteService.buscarPorNome(nome);
-        return ResponseEntity.ok(ApiResponseWrapper.success(clientes, "Clientes encontrados com sucesso."));
+    public ResponseEntity<PagedResponseWrapper<ClienteResponseDTO>> buscarPorNome(
+            @RequestParam String nome,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<ClienteResponseDTO> clientes = clienteService.buscarPorNome(nome, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(clientes));
     }
 
     @PutMapping("/{id}")
@@ -106,10 +109,12 @@ public class ClienteController {
     }
 
     @GetMapping("/{clienteId}/pedidos")
-    @Operation(summary = "Busca os pedidos de um cliente", description = "Busca todos os pedidos de um cliente específico.")
+    @Operation(summary = "Busca os pedidos de um cliente de forma paginada", description = "Busca todos os pedidos de um cliente específico.")
     @ApiResponse(responseCode = "200", description = "Pedidos do cliente listados com sucesso")
-    public ResponseEntity<ApiResponseWrapper<List<PedidoResponseDTO>>> buscarPedidosPorCliente(@Parameter(description = "ID do cliente") @PathVariable Long clienteId) {
-        List<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorCliente(clienteId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(pedidos, "Pedidos do cliente listados com sucesso."));
+    public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> buscarPedidosPorCliente(
+            @Parameter(description = "ID do cliente") @PathVariable Long clienteId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorCliente(clienteId, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(pedidos));
     }
 }

@@ -127,19 +127,15 @@ public class PedidoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId) {
+    public Page<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId, Pageable pageable) {
         Specification<Pedido> spec = PedidoSpecs.doCliente(clienteId);
-        return pedidoRepository.findAll(spec).stream()
-                .map(this::toPedidoResponseDTO)
-                .collect(Collectors.toList());
+        return pedidoRepository.findAll(spec, pageable).map(this::toPedidoResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId) {
+    public Page<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, Pageable pageable) {
         Specification<Pedido> spec = PedidoSpecs.doRestaurante(restauranteId);
-        return pedidoRepository.findAll(spec).stream()
-                .map(this::toPedidoResponseDTO)
-                .collect(Collectors.toList());
+        return pedidoRepository.findAll(spec, pageable).map(this::toPedidoResponseDTO);
     }
 
     @Transactional(readOnly = true)

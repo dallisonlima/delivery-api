@@ -10,11 +10,10 @@ import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -80,10 +79,9 @@ public class ProdutoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId) {
-        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId).stream()
-                .map(this::toProdutoResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Pageable pageable) {
+        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId, pageable)
+                .map(this::toProdutoResponseDTO);
     }
 
     @Transactional(readOnly = true)
@@ -94,17 +92,15 @@ public class ProdutoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
-        return produtoRepository.findByCategoria(categoria).stream()
-                .map(this::toProdutoResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria, Pageable pageable) {
+        return produtoRepository.findByCategoria(categoria, pageable)
+                .map(this::toProdutoResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarPorNome(String nome) {
-        return produtoRepository.findByNomeContainingIgnoreCase(nome).stream()
-                .map(this::toProdutoResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ProdutoResponseDTO> buscarPorNome(String nome, Pageable pageable) {
+        return produtoRepository.findByNomeContainingIgnoreCase(nome, pageable)
+                .map(this::toProdutoResponseDTO);
     }
 
     private ProdutoResponseDTO toProdutoResponseDTO(Produto produto) {

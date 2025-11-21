@@ -4,6 +4,8 @@ import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ApiResponseWrapper;
+import com.delivery_api.Projeto.Delivery.API.dto.response.PagedResponseWrapper;
 import com.delivery_api.Projeto.Delivery.API.service.PedidoService;
 import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;
 import com.delivery_api.Projeto.Delivery.API.service.RestauranteService;
@@ -13,13 +15,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurantes")
@@ -42,25 +46,28 @@ public class RestauranteController {
             @ApiResponse(responseCode = "201", description = "Restaurante cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Requisição inválida")
     })
-    public ResponseEntity<RestauranteResponseDTO> cadastrar(@Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
+    public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> cadastrar(@Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
         RestauranteResponseDTO novoRestaurante = restauranteService.cadastrar(restauranteDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoRestaurante);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(novoRestaurante, "Restaurante cadastrado com sucesso."));
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os restaurantes", description = "Lista todos os restaurantes, com a opção de filtrar por categoria e status de atividade.")
+    @Operation(summary = "Lista todos os restaurantes de forma paginada", description = "Lista todos os restaurantes, com a opção de filtrar por categoria e status de atividade.")
     @ApiResponse(responseCode = "200", description = "Restaurantes listados com sucesso")
-    public ResponseEntity<List<RestauranteResponseDTO>> listar(
+    public ResponseEntity<PagedResponseWrapper<RestauranteResponseDTO>> listar(
             @Parameter(description = "Categoria do restaurante") @RequestParam(required = false) String categoria,
-            @Parameter(description = "Status do restaurante (ativo/inativo)") @RequestParam(required = false) Boolean ativo) {
-        return ResponseEntity.ok(restauranteService.listar(categoria, ativo));
+            @Parameter(description = "Status do restaurante (ativo/inativo)") @RequestParam(required = false) Boolean ativo,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<RestauranteResponseDTO> restaurantes = restauranteService.listar(categoria, ativo, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(restaurantes));
     }
 
     @GetMapping("/disponiveis")
-    @Operation(summary = "Busca restaurantes disponíveis", description = "Busca todos os restaurantes que estão ativos.")
+    @Operation(summary = "Busca restaurantes disponíveis de forma paginada", description = "Busca todos os restaurantes que estão ativos.")
     @ApiResponse(responseCode = "200", description = "Restaurantes encontrados com sucesso")
-    public ResponseEntity<List<RestauranteResponseDTO>> buscarRestaurantesDisponiveis() {
-        return ResponseEntity.ok(restauranteService.buscarRestaurantesDisponiveis());
+    public ResponseEntity<PagedResponseWrapper<RestauranteResponseDTO>> buscarRestaurantesDisponiveis(@PageableDefault(size = 10) Pageable pageable) {
+        Page<RestauranteResponseDTO> restaurantes = restauranteService.buscarRestaurantesDisponiveis(pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(restaurantes));
     }
 
     @GetMapping("/{id}")
@@ -69,9 +76,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "200", description = "Restaurante encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<RestauranteResponseDTO> buscarPorId(@Parameter(description = "ID do restaurante") @PathVariable Long id) {
+    public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> buscarPorId(@Parameter(description = "ID do restaurante") @PathVariable Long id) {
         RestauranteResponseDTO restaurante = restauranteService.buscarPorId(id);
-        return ResponseEntity.ok(restaurante);
+        return ResponseEntity.ok(ApiResponseWrapper.success(restaurante, "Restaurante encontrado com sucesso."));
     }
 
     @PutMapping("/{id}")
@@ -81,9 +88,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "400", description = "Requisição inválida"),
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<RestauranteResponseDTO> atualizar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
+    public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> atualizar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
         RestauranteResponseDTO restauranteAtualizado = restauranteService.atualizar(id, restauranteDTO);
-        return ResponseEntity.ok(restauranteAtualizado);
+        return ResponseEntity.ok(ApiResponseWrapper.success(restauranteAtualizado, "Restaurante atualizado com sucesso."));
     }
 
     @DeleteMapping("/{id}")
@@ -99,10 +106,13 @@ public class RestauranteController {
     }
 
     @GetMapping("/categoria/{categoria}")
-    @Operation(summary = "Busca restaurantes por categoria", description = "Busca todos os restaurantes de uma categoria específica.")
+    @Operation(summary = "Busca restaurantes por categoria de forma paginada", description = "Busca todos os restaurantes de uma categoria específica.")
     @ApiResponse(responseCode = "200", description = "Restaurantes encontrados com sucesso")
-    public ResponseEntity<List<RestauranteResponseDTO>> buscarPorCategoria(@Parameter(description = "Nome da categoria") @PathVariable String categoria) {
-        return ResponseEntity.ok(restauranteService.buscarPorCategoria(categoria));
+    public ResponseEntity<PagedResponseWrapper<RestauranteResponseDTO>> buscarPorCategoria(
+            @Parameter(description = "Nome da categoria") @PathVariable String categoria,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<RestauranteResponseDTO> restaurantes = restauranteService.buscarPorCategoria(categoria, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(restaurantes));
     }
 
     @GetMapping("/{restauranteId}/taxa-entrega")
@@ -111,9 +121,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "200", description = "Taxa de entrega retornada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<BigDecimal> calcularTaxaEntrega(@Parameter(description = "ID do restaurante") @PathVariable Long restauranteId) {
-        BigDecimal taxa = restauranteService.calcularTaxaEntrega(restauranteId, null); // CEP não é mais usado aqui
-        return ResponseEntity.ok(taxa);
+    public ResponseEntity<ApiResponseWrapper<BigDecimal>> calcularTaxaEntrega(@Parameter(description = "ID do restaurante") @PathVariable Long restauranteId) {
+        BigDecimal taxa = restauranteService.calcularTaxaEntrega(restauranteId, null);
+        return ResponseEntity.ok(ApiResponseWrapper.success(taxa, "Taxa de entrega retornada com sucesso."));
     }
 
     @PatchMapping("/{id}/status")
@@ -122,22 +132,28 @@ public class RestauranteController {
             @ApiResponse(responseCode = "200", description = "Status do restaurante alterado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<RestauranteResponseDTO> ativarOuDesativar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Parameter(description = "Novo status do restaurante") @RequestParam boolean ativo) {
+    public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> ativarOuDesativar(@Parameter(description = "ID do restaurante") @PathVariable Long id, @Parameter(description = "Novo status do restaurante") @RequestParam boolean ativo) {
         RestauranteResponseDTO restauranteAtualizado = restauranteService.ativarOuDesativar(id, ativo);
-        return ResponseEntity.ok(restauranteAtualizado);
+        return ResponseEntity.ok(ApiResponseWrapper.success(restauranteAtualizado, "Status do restaurante alterado com sucesso."));
     }
 
     @GetMapping("/{restauranteId}/produtos")
-    @Operation(summary = "Busca os produtos de um restaurante", description = "Busca todos os produtos de um restaurante específico.")
+    @Operation(summary = "Busca os produtos de um restaurante de forma paginada", description = "Busca todos os produtos de um restaurante específico.")
     @ApiResponse(responseCode = "200", description = "Produtos do restaurante listados com sucesso")
-    public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutosPorRestaurante(@Parameter(description = "ID do restaurante") @PathVariable Long restauranteId) {
-        return ResponseEntity.ok(produtoService.buscarProdutosPorRestaurante(restauranteId));
+    public ResponseEntity<PagedResponseWrapper<ProdutoResponseDTO>> buscarProdutosPorRestaurante(
+            @Parameter(description = "ID do restaurante") @PathVariable Long restauranteId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<ProdutoResponseDTO> produtos = produtoService.buscarProdutosPorRestaurante(restauranteId, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(produtos));
     }
 
     @GetMapping("/{restauranteId}/pedidos")
-    @Operation(summary = "Busca os pedidos de um restaurante", description = "Busca todos os pedidos de um restaurante específico.")
+    @Operation(summary = "Busca os pedidos de um restaurante de forma paginada", description = "Busca todos os pedidos de um restaurante específico.")
     @ApiResponse(responseCode = "200", description = "Pedidos do restaurante listados com sucesso")
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPedidosPorRestaurante(@Parameter(description = "ID do restaurante") @PathVariable Long restauranteId) {
-        return ResponseEntity.ok(pedidoService.buscarPedidosPorRestaurante(restauranteId));
+    public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> buscarPedidosPorRestaurante(
+            @Parameter(description = "ID do restaurante") @PathVariable Long restauranteId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<PedidoResponseDTO> pedidos = pedidoService.buscarPedidosPorRestaurante(restauranteId, pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(pedidos));
     }
 }

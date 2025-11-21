@@ -4,6 +4,7 @@ import com.delivery_api.Projeto.Delivery.API.dto.ClientesMaisAtivosDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutosMaisVendidosDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.VendasPorRestauranteDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ApiResponseWrapper;
 import com.delivery_api.Projeto.Delivery.API.service.RelatorioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,8 +33,9 @@ public class RelatorioController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Relatório gerado com sucesso")
     })
-    public ResponseEntity<List<VendasPorRestauranteDTO>> getVendasPorRestaurante() {
-        return ResponseEntity.ok(relatorioService.findTotalVendasPorRestaurante());
+    public ResponseEntity<ApiResponseWrapper<List<VendasPorRestauranteDTO>>> getVendasPorRestaurante() {
+        List<VendasPorRestauranteDTO> relatorio = relatorioService.findTotalVendasPorRestaurante();
+        return ResponseEntity.ok(ApiResponseWrapper.success(relatorio, "Relatório de vendas por restaurante gerado com sucesso."));
     }
 
     @GetMapping("/produtos-mais-vendidos")
@@ -41,8 +43,9 @@ public class RelatorioController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Relatório gerado com sucesso")
     })
-    public ResponseEntity<List<ProdutosMaisVendidosDTO>> getProdutosMaisVendidos() {
-        return ResponseEntity.ok(relatorioService.findProdutosMaisVendidos());
+    public ResponseEntity<ApiResponseWrapper<List<ProdutosMaisVendidosDTO>>> getProdutosMaisVendidos() {
+        List<ProdutosMaisVendidosDTO> relatorio = relatorioService.findProdutosMaisVendidos();
+        return ResponseEntity.ok(ApiResponseWrapper.success(relatorio, "Relatório de produtos mais vendidos gerado com sucesso."));
     }
 
     @GetMapping("/clientes-ativos")
@@ -50,8 +53,9 @@ public class RelatorioController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Relatório gerado com sucesso")
     })
-    public ResponseEntity<List<ClientesMaisAtivosDTO>> getClientesMaisAtivos() {
-        return ResponseEntity.ok(relatorioService.findClientesMaisAtivos());
+    public ResponseEntity<ApiResponseWrapper<List<ClientesMaisAtivosDTO>>> getClientesMaisAtivos() {
+        List<ClientesMaisAtivosDTO> relatorio = relatorioService.findClientesMaisAtivos();
+        return ResponseEntity.ok(ApiResponseWrapper.success(relatorio, "Relatório de clientes mais ativos gerado com sucesso."));
     }
 
     @GetMapping("/pedidos-por-periodo")
@@ -59,9 +63,10 @@ public class RelatorioController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Relatório gerado com sucesso")
     })
-    public ResponseEntity<List<PedidoResponseDTO>> getPedidosPorPeriodo(
+    public ResponseEntity<ApiResponseWrapper<List<PedidoResponseDTO>>> getPedidosPorPeriodo(
             @Parameter(description = "Data de início do período (formato: yyyy-MM-dd)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @Parameter(description = "Data de fim do período (formato: yyyy-MM-dd)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
-        return ResponseEntity.ok(relatorioService.findPedidosPorPeriodo(dataInicio, dataFim));
+        List<PedidoResponseDTO> relatorio = relatorioService.findPedidosPorPeriodo(dataInicio, dataFim);
+        return ResponseEntity.ok(ApiResponseWrapper.success(relatorio, "Relatório de pedidos por período gerado com sucesso."));
     }
 }

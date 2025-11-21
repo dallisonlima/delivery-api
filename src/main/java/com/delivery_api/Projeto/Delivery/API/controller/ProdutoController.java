@@ -14,14 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/produtos")
-@CrossOrigin(origins = "*")
 @Tag(name = "Produtos", description = "Operações relacionadas a produtos")
 public class ProdutoController {
 
@@ -37,7 +38,14 @@ public class ProdutoController {
     })
     public ResponseEntity<ApiResponseWrapper<ProdutoResponseDTO>> cadastrar(@Validated @RequestBody ProdutoRequestDTO produtoDTO) {
         ProdutoResponseDTO novoProduto = produtoService.cadastrar(produtoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(novoProduto, "Produto cadastrado com sucesso."));
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(novoProduto.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(ApiResponseWrapper.success(novoProduto, "Produto cadastrado com sucesso."));
     }
 
     @PutMapping("/{id}")

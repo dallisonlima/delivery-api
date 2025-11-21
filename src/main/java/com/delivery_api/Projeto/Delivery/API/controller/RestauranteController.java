@@ -18,16 +18,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/restaurantes")
-@CrossOrigin(origins = "*")
 @Tag(name = "Restaurantes", description = "Operações relacionadas a restaurantes")
 public class RestauranteController {
 
@@ -48,7 +48,14 @@ public class RestauranteController {
     })
     public ResponseEntity<ApiResponseWrapper<RestauranteResponseDTO>> cadastrar(@Validated @RequestBody RestauranteRequestDTO restauranteDTO) {
         RestauranteResponseDTO novoRestaurante = restauranteService.cadastrar(restauranteDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(novoRestaurante, "Restaurante cadastrado com sucesso."));
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(novoRestaurante.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(ApiResponseWrapper.success(novoRestaurante, "Restaurante cadastrado com sucesso."));
     }
 
     @GetMapping

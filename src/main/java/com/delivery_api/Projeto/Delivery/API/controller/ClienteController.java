@@ -16,14 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/clientes")
-@CrossOrigin(origins = "*")
 @Tag(name = "Clientes", description = "Operações relacionadas a clientes")
 public class ClienteController {
 
@@ -42,7 +43,14 @@ public class ClienteController {
     })
     public ResponseEntity<ApiResponseWrapper<ClienteResponseDTO>> cadastrar(@Validated @RequestBody ClienteRequestDTO clienteDTO) {
         ClienteResponseDTO clienteSalvo = clienteService.cadastrar(clienteDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(clienteSalvo, "Cliente cadastrado com sucesso."));
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(clienteSalvo.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(ApiResponseWrapper.success(clienteSalvo, "Cliente cadastrado com sucesso."));
     }
 
     @GetMapping

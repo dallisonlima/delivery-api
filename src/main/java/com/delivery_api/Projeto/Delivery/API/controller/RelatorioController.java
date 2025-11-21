@@ -21,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/relatorios")
-@CrossOrigin(origins = "*")
 @Tag(name = "Relatórios", description = "Operações relacionadas a relatórios")
 public class RelatorioController {
 

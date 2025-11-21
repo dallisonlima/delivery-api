@@ -16,17 +16,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/pedidos")
-@CrossOrigin(origins = "*")
 @Tag(name = "Pedidos", description = "Operações relacionadas a pedidos")
 public class PedidoController {
 
@@ -42,7 +42,14 @@ public class PedidoController {
     })
     public ResponseEntity<ApiResponseWrapper<PedidoResponseDTO>> criar(@Validated @RequestBody PedidoRequestDTO pedidoDTO) {
         PedidoResponseDTO novoPedido = pedidoService.criar(pedidoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(novoPedido, "Pedido criado com sucesso."));
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(novoPedido.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(ApiResponseWrapper.success(novoPedido, "Pedido criado com sucesso."));
     }
 
     @GetMapping

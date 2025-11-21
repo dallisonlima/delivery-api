@@ -6,15 +6,14 @@ import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
-import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
+import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -60,39 +59,48 @@ public class ProdutoService {
         return toProdutoResponseDTO(produtoAtualizado);
     }
 
-    public void alterarDisponibilidade(Long produtoId) {
+    public ProdutoResponseDTO alterarDisponibilidade(Long produtoId) {
         Produto produto = produtoRepository.findById(produtoId)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + produtoId));
-        produto.setDisponivel(!produto.getDisponivel()); // Alterna o status
-        produtoRepository.save(produto);
+        produto.setDisponivel(!produto.getDisponivel());
+        Produto produtoAtualizado = produtoRepository.save(produto);
+        return toProdutoResponseDTO(produtoAtualizado);
     }
 
     public void deletar(Long id) {
         if (!produtoRepository.existsById(id)) {
             throw new EntityNotFoundException("Produto não encontrado: " + id);
         }
-        produtoRepository.deleteById(id);
+        try {
+            produtoRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Não é possível deletar o produto pois ele está associado a pedidos. Considere alterar sua disponibilidade.");
+        }
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId) {
-        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId).stream()
-                .map(this::toProdutoResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<ProdutoResponseDTO> buscarPorId(Long id) {
-        return produtoRepository.findById(id)
-                .filter(Produto::getDisponivel)
+    public Page<ProdutoResponseDTO> buscarProdutosPorRestaurante(Long restauranteId, Pageable pageable) {
+        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId, pageable)
                 .map(this::toProdutoResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria) {
-        return produtoRepository.findByCategoria(categoria).stream()
+    public ProdutoResponseDTO buscarPorId(Long id) {
+        return produtoRepository.findById(id)
                 .map(this::toProdutoResponseDTO)
-                .collect(Collectors.toList());
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProdutoResponseDTO> buscarProdutosPorCategoria(String categoria, Pageable pageable) {
+        return produtoRepository.findByCategoria(categoria, pageable)
+                .map(this::toProdutoResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProdutoResponseDTO> buscarPorNome(String nome, Pageable pageable) {
+        return produtoRepository.findByNomeContainingIgnoreCase(nome, pageable)
+                .map(this::toProdutoResponseDTO);
     }
 
     private ProdutoResponseDTO toProdutoResponseDTO(Produto produto) {

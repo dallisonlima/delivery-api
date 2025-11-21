@@ -5,21 +5,21 @@ import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
-import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
-import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
-import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
-import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
-import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException; // Importar
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;    // Importar
+import com.delivery_api.Projeto.Delivery.API.repository.*;
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
+import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +39,6 @@ public class PedidoService {
         Cliente cliente = clienteRepository.findById(pedidoDTO.getCliente().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado."));
         
-        // Validação: Verificar se o cliente está ativo
         if (!cliente.getAtivo()) {
             throw new BusinessException("Cliente inativo não pode fazer pedidos.");
         }
@@ -54,14 +53,11 @@ public class PedidoService {
         pedido.setStatus(StatusPedido.PENDENTE);
         pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
 
-        StringBuilder descricaoItens = new StringBuilder();
         List<ItemPedido> itensDoPedido = new ArrayList<>();
-
         for (ItemPedidoRequestDTO itemDTO : pedidoDTO.getItens()) {
             Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + itemDTO.getProduto().getId()));
 
-            // Validação: Verificar se o produto pertence ao restaurante do pedido
             if (!produto.getRestaurante().getId().equals(restaurante.getId())) {
                 throw new BusinessException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
             }
@@ -76,16 +72,9 @@ public class PedidoService {
             itemPedido.setQuantidade(itemDTO.getQuantidade());
             itemPedido.setPrecoUnitario(produto.getPreco());
             itensDoPedido.add(itemPedido);
-
-            if (descricaoItens.length() > 0) {
-                descricaoItens.append(", ");
-            }
-            descricaoItens.append(produto.getNome()).append(" (").append(itemDTO.getQuantidade()).append("x)");
         }
 
         pedido.setItens(itensDoPedido);
-        pedido.setItensDescricao(descricaoItens.toString());
-        // Utiliza o método calcularTotalPedido para definir o valor total
         pedido.setValorTotal(calcularTotalPedido(pedidoDTO.getRestaurante().getId(), pedidoDTO.getItens()));
 
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
@@ -109,7 +98,6 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id));
 
-        // Valida se o status atual permite o cancelamento
         if (pedido.getStatus() == StatusPedido.ENTREGUE || pedido.getStatus() == StatusPedido.CANCELADO) {
             throw new BusinessException("Não é possível cancelar um pedido com status " + pedido.getStatus());
         }
@@ -119,23 +107,35 @@ public class PedidoService {
         return toPedidoResponseDTO(pedidoCancelado);
     }
 
-    public void deletar(Long id) {
-        if (!pedidoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Pedido não encontrado: " + id);
+    @Transactional(readOnly = true)
+    public Page<PedidoResponseDTO> listar(StatusPedido status, LocalDate data, Pageable pageable) {
+        Specification<Pedido> spec = Specification.where(null);
+        if (status != null) {
+            spec = spec.and(PedidoSpecs.comStatus(status));
         }
-        pedidoRepository.deleteById(id);
+        if (data != null) {
+            spec = spec.and(PedidoSpecs.comData(data));
+        }
+        return pedidoRepository.findAll(spec, pageable).map(this::toPedidoResponseDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<PedidoResponseDTO> buscarPorId(Long id) {
-        return pedidoRepository.findById(id).map(this::toPedidoResponseDTO);
-    }
-
-    @Transactional(readOnly = true)
-    public List<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId) {
-        return pedidoRepository.findByClienteIdWithItens(clienteId).stream()
+    public PedidoResponseDTO buscarPorId(Long id) {
+        return pedidoRepository.findById(id)
                 .map(this::toPedidoResponseDTO)
-                .collect(Collectors.toList());
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PedidoResponseDTO> buscarPedidosPorCliente(Long clienteId, Pageable pageable) {
+        Specification<Pedido> spec = PedidoSpecs.doCliente(clienteId);
+        return pedidoRepository.findAll(spec, pageable).map(this::toPedidoResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PedidoResponseDTO> buscarPedidosPorRestaurante(Long restauranteId, Pageable pageable) {
+        Specification<Pedido> spec = PedidoSpecs.doRestaurante(restauranteId);
+        return pedidoRepository.findAll(spec, pageable).map(this::toPedidoResponseDTO);
     }
 
     @Transactional(readOnly = true)
@@ -148,7 +148,6 @@ public class PedidoService {
             Produto produto = produtoRepository.findById(itemDTO.getProduto().getId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + itemDTO.getProduto().getId()));
 
-            // Validação: Verificar se o produto pertence ao restaurante do pedido
             if (!produto.getRestaurante().getId().equals(restaurante.getId())) {
                 throw new BusinessException("O produto '" + produto.getNome() + "' não pertence ao restaurante selecionado.");
             }
@@ -161,7 +160,7 @@ public class PedidoService {
         return total.add(restaurante.getTaxaEntrega());
     }
 
-    private boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {
+    public boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {
         switch (currentStatus) {
             case PENDENTE:
                 return newStatus == StatusPedido.CONFIRMADO || newStatus == StatusPedido.CANCELADO;
@@ -173,13 +172,13 @@ public class PedidoService {
                 return newStatus == StatusPedido.ENTREGUE;
             case ENTREGUE:
             case CANCELADO:
-                return false; // Estados finais, não permitem transições
+                return false;
             default:
                 return false;
         }
     }
 
-    private PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
+    public PedidoResponseDTO toPedidoResponseDTO(Pedido pedido) {
         PedidoResponseDTO dto = new PedidoResponseDTO();
         dto.setId(pedido.getId());
         dto.setNumeroPedido(pedido.getNumeroPedido());
@@ -197,7 +196,7 @@ public class PedidoService {
         return dto;
     }
 
-    private ItemPedidoResponseDTO toItemPedidoResponseDTO(ItemPedido itemPedido) {
+    public ItemPedidoResponseDTO toItemPedidoResponseDTO(ItemPedido itemPedido) {
         ItemPedidoResponseDTO dto = new ItemPedidoResponseDTO();
         dto.setProdutoId(itemPedido.getProduto().getId());
         dto.setProdutoNome(itemPedido.getProduto().getNome());

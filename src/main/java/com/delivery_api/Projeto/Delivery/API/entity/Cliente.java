@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -23,22 +21,17 @@ public class Cliente {
 
     private String telefone;
 
-    private String endereco;
+    @Embedded
+    private Endereco endereco;
 
-    @Column(name = "data_cadastro")
-    private LocalDateTime dataCadastro;
-
-    @Column(nullable = true)
     private Boolean ativo;
 
-    public void inativar() {
-        this.ativo = false;
-    }
-
-    @PrePersist
-    private void setDataCadastro() {
-        if (dataCadastro == null) {
-            this.dataCadastro = LocalDateTime.now();
-        }
+    // Construtor de conveniência para testes
+    public Cliente(String nome, String email, String telefone, String endereco, boolean ativo) {
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        // Este construtor pode precisar de ajuste ou ser removido se o endereço for complexo
+        this.ativo = ativo;
     }
 }

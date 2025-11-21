@@ -3,6 +3,7 @@ package com.delivery_api.Projeto.Delivery.API.repository;
 import com.delivery_api.Projeto.Delivery.API.entity.Pedido;
 import com.delivery_api.Projeto.Delivery.API.entity.StatusPedido;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PedidoRepository extends JpaRepository<Pedido, Long> {
+public interface PedidoRepository extends JpaRepository<Pedido, Long>, JpaSpecificationExecutor<Pedido> {
 
     List<Pedido> findByClienteId(Long clienteId);
 
@@ -29,8 +30,11 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Query("SELECT p FROM Pedido p LEFT JOIN FETCH p.itens WHERE p.id = :pedidoId AND p.cliente.id = :clienteId")
     Optional<Pedido> findByIdAndClienteIdWithItens(Long pedidoId, Long clienteId);
 
-    @Query("SELECT p.restaurante.nome, SUM(p.valorTotal) FROM Pedido p GROUP BY p.restaurante.nome")
+    @Query("SELECT p.restaurante.nome, SUM(p.valorTotal) FROM Pedido p GROUP BY p.restaurante.nome ORDER BY SUM(p.valorTotal) DESC")
     List<Object[]> findTotalVendasPorRestaurante();
+
+    @Query("SELECT p.cliente.nome, COUNT(p) as totalPedidos FROM Pedido p GROUP BY p.cliente.nome ORDER BY totalPedidos DESC")
+    List<Object[]> findClientesMaisAtivos();
 
     List<Pedido> findByValorTotalGreaterThan(BigDecimal valor);
 

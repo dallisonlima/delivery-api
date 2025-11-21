@@ -7,7 +7,7 @@ import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
 import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
+import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +23,7 @@ public class ClienteService {
 
     public ClienteResponseDTO cadastrar(ClienteRequestDTO clienteDTO) {
         if (clienteRepository.existsByEmail(clienteDTO.getEmail())) {
-            throw new BusinessException("Email já cadastrado: " + clienteDTO.getEmail());
+            throw new ConflictException("Email já cadastrado: " + clienteDTO.getEmail());
         }
 
         Cliente cliente = new Cliente();
@@ -71,7 +71,7 @@ public class ClienteService {
 
         if (!cliente.getEmail().equals(clienteDTO.getEmail()) &&
                 clienteRepository.existsByEmail(clienteDTO.getEmail())) {
-            throw new BusinessException("Email já cadastrado: " + clienteDTO.getEmail());
+            throw new ConflictException("Email já cadastrado: " + clienteDTO.getEmail());
         }
 
         cliente.setNome(clienteDTO.getNome());

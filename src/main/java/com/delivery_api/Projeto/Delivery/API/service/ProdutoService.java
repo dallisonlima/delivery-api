@@ -7,7 +7,7 @@ import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
-import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
+import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -74,7 +74,7 @@ public class ProdutoService {
         try {
             produtoRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Não é possível deletar o produto pois ele está associado a pedidos. Considere alterar sua disponibilidade.");
+            throw new ConflictException("Não é possível deletar o produto pois ele está associado a pedidos. Considere alterar sua disponibilidade.");
         }
     }
 

@@ -25,19 +25,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, WebRequest request) {
-        HttpStatus status = HttpStatus.CONFLICT; // Default to 409
-        if (ex.getMessage().contains("Transição de status inválida")) {
-            status = HttpStatus.BAD_REQUEST; // Use 400 for invalid status transitions
-        }
-        
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
-                status,
+                HttpStatus.CONFLICT,
                 ex.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(errorResponse, status);
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

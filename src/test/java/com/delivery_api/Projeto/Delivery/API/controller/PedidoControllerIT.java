@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -60,8 +61,8 @@ public class PedidoControllerIT {
 
     @BeforeEach
     void setUp() {
-        cliente = clienteRepository.save(new Cliente("Cliente Pedido Teste", "pedido@teste.com", "987654321", "Rua do Pedido, 456", true));
-        restaurante = restauranteRepository.save(new Restaurante("Restaurante Pedido Teste", new BigDecimal("5.00"), "Lanches", true, "Endereço", "12345", 4.5));
+        cliente = clienteRepository.save(new Cliente("Cliente Pedido Teste", "pedido@teste.com", "987654321", null, true));
+        restaurante = restauranteRepository.save(new Restaurante("Restaurante Pedido Teste", new BigDecimal("5.00"), "Lanches", true, null, "12345", 4.5));
         produto = produtoRepository.save(new Produto("Produto Pedido Teste", "Desc", new BigDecimal("10.00"), "Bebidas", true, restaurante));
 
         pedido = new Pedido();
@@ -86,7 +87,17 @@ public class PedidoControllerIT {
     }
 
     @Test
-    void criar_deveRetornar409_quandoClienteInativo() throws Exception {
+    void criar_deveRetornar400_quandoNaoHaItens() throws Exception {
+        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(new IdRequestDTO(cliente.getId()), new IdRequestDTO(restaurante.getId()), "Endereço", Collections.emptyList());
+
+        mockMvc.perform(post("/api/pedidos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(pedidoRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void criar_deveRetornar422_quandoClienteInativo() throws Exception {
         cliente.setAtivo(false);
         clienteRepository.save(cliente);
 
@@ -96,7 +107,7 @@ public class PedidoControllerIT {
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(pedidoRequest)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -122,12 +133,12 @@ public class PedidoControllerIT {
     }
 
     @Test
-    void alterarStatus_deveRetornar400_quandoTransicaoInvalida() throws Exception {
+    void alterarStatus_deveRetornar422_quandoTransicaoInvalida() throws Exception {
         pedido.setStatus(StatusPedido.ENTREGUE);
         pedidoRepository.save(pedido);
 
         mockMvc.perform(patch("/api/pedidos/{id}/status", pedido.getId())
                         .param("status", "CANCELADO"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 }

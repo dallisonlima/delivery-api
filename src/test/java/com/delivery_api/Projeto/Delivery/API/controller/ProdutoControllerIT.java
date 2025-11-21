@@ -77,7 +77,9 @@ public class ProdutoControllerIT {
     void cadastrar_deveRetornar201_quandoDadosValidos() throws Exception {
         ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
         requestDTO.setNome("Novo Produto");
+        requestDTO.setDescricao("Uma descrição válida com mais de dez caracteres.");
         requestDTO.setPreco(new BigDecimal("15.50"));
+        requestDTO.setCategoria("Lanches");
         requestDTO.setRestauranteId(restaurante.getId());
         requestDTO.setDisponivel(true);
 
@@ -92,7 +94,23 @@ public class ProdutoControllerIT {
     @Test
     void cadastrar_deveRetornar400_quandoDadosInvalidos() throws Exception {
         ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
-        requestDTO.setNome("");
+        requestDTO.setNome(""); // Nome inválido
+
+        mockMvc.perform(post("/api/produtos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void cadastrar_deveRetornar400_quandoPrecoInvalido() throws Exception {
+        ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
+        requestDTO.setNome("Produto com Preço Inválido");
+        requestDTO.setDescricao("Uma descrição válida com mais de dez caracteres.");
+        requestDTO.setPreco(new BigDecimal("-10.00")); // Preço negativo
+        requestDTO.setCategoria("Lanches");
+        requestDTO.setRestauranteId(restaurante.getId());
+        requestDTO.setDisponivel(true);
 
         mockMvc.perform(post("/api/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -143,7 +161,9 @@ public class ProdutoControllerIT {
     void atualizar_deveRetornar200_quandoDadosValidos() throws Exception {
         ProdutoRequestDTO requestDTO = new ProdutoRequestDTO();
         requestDTO.setNome("Produto Atualizado");
+        requestDTO.setDescricao("Uma descrição válida e atualizada com mais de dez caracteres.");
         requestDTO.setPreco(new BigDecimal("25.00"));
+        requestDTO.setCategoria("Bebidas");
         requestDTO.setRestauranteId(restaurante.getId());
         requestDTO.setDisponivel(true);
 

@@ -1,0 +1,1023 @@
+type: collection.insomnia.rest/5.0
+name: Delivery API -Quase ok
+meta:
+  id: wrk_37bba0180a72419c851cb1584aa3deb2
+  created: 1763920318221
+  modified: 1763920509003
+collection:
+  - name: Clientes
+    meta:
+      id: fld_729896fae44a448eb7be0660d49bf58b
+      created: 1698399600000
+      modified: 1698399600000
+      sortKey: -1763920318240
+    children:
+      - url: "{{ _.baseUrl }}/api/clientes/1"
+        name: Atualizar Cliente
+        meta:
+          id: req_382a8b0d8a5e4aa2a5d7c84e9e37aa86
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -70
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Cliente Atualizado",
+            	"email": "cliente.novo@example.com",
+            	"telefone": "11111-2222",
+            	"endereco": "Avenida Nova, 456"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes/1/pedidos"
+        name: Histórico de Pedidos do Cliente
+        meta:
+          id: req_a611cc83cbc3477883d441f426927644
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -50
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes/1"
+        name: Buscar Cliente por ID
+        meta:
+          id: req_b2e4bbc1a54c4cf3ba059ea03230d3f3
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -80
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes"
+        name: Cadastrar Cliente
+        meta:
+          id: req_de70da8b86534c82a16c20b94465cd51
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Novo Cliente",
+            	"email": "cliente@example.com",
+            	"telefone": "99999-8888",
+            	"endereco": "Rua dos Testes, 123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes/1/toggle-status"
+        name: Ativar/Desativar Cliente
+        meta:
+          id: req_e75968a9a3da47769cc6c77dcd76e9ea
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -60
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes"
+        name: Listar Clientes Ativos
+        meta:
+          id: req_e885ea573ca244308e7b874f4d354a7f
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -90
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Produtos
+    meta:
+      id: fld_747741d3ba8c4667bd0016f8d1bfd0d4
+      created: 1698399600000
+      modified: 1698399600000
+      sortKey: -1763920318285
+    children:
+      - url: "{{ _.baseUrl }}/api/produtos/1"
+        name: Buscar Produto por ID
+        meta:
+          id: req_02466d77d2414e4aa29025ae61cc6010
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -85
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/produtos/1"
+        name: Deletar Produto
+        meta:
+          id: req_23c2d8b409fe40c6b18fbd535a69aae0
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -70
+        method: DELETE
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/produtos"
+        name: Cadastrar Produto
+        meta:
+          id: req_2fc86228b7e942b08224bf20fc4efb26
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Feijoada Completa",
+            	"descricao": "Acompanha arroz, couve e farofa",
+            	"preco": 45.00,
+            	"categoria": "Prato Principal",
+            	"disponivel": true,
+            	"restauranteId": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/produtos/1"
+        name: Atualizar Produto
+        meta:
+          id: req_4e537e7e6c254e6e8d2fd2876aa76c76
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -95
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Feijoada Completa Atualizada",
+            	"descricao": "Acompanha arroz, couve, farofa e torresmo",
+            	"preco": 48.00,
+            	"categoria": "Prato Principal",
+            	"disponivel": true,
+            	"restauranteId": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/produtos/categoria/Prato Principal"
+        name: Buscar Produtos por Categoria
+        meta:
+          id: req_83d3a3769540446a9bbcc87cbbf1ae37
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -80
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/produtos/buscar"
+        name: Buscar Produto por Nome
+        meta:
+          id: req_97b45477dc9140b0b1baa415e58d1558
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -78
+        method: GET
+        parameters:
+          - name: nome
+            value: Feijoada
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/produtos/1/disponibilidade"
+        name: Alterar Disponibilidade Produto
+        meta:
+          id: req_ce97f516e9dd4acdb0eb0b9a5bf6ade1
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -75
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Health & Info
+    meta:
+      id: fld_974a2855fd9b460c83a9552624cfb060
+      created: 1698399600000
+      modified: 1698399600000
+      sortKey: -1763920318235
+    children:
+      - url: "{{ _.baseUrl }}/api/health"
+        name: Health Check
+        meta:
+          id: req_4cfda5d630c14f62a58f2c925144870a
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/info"
+        name: Application Info
+        meta:
+          id: req_6f11ec5f30af489dbc709faf963236cb
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -50
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Restaurantes
+    meta:
+      id: fld_b69e0401537f419087e607d524c5052d
+      created: 1698399600000
+      modified: 1698399600000
+      sortKey: -1763920318254
+    children:
+      - url: "{{ _.baseUrl }}/api/restaurantes/1"
+        name: Atualizar Restaurante
+        meta:
+          id: req_3c16349ddd0f40eaa9d138552ea6e07f
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -75
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Sabor Brasileiro Atualizado",
+            	"taxaEntrega": 12.00,
+            	"categoria": "Brasileira",
+            	"endereco": "Rua Nova, 100",
+            	"telefone": "11999998888"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/1/produtos"
+        name: Buscar Produtos por Restaurante
+        meta:
+          id: req_7107363480c9402c990d7f6efbc94859
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -55
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/1"
+        name: Buscar Restaurante por ID
+        meta:
+          id: req_7a7a6fea2d2d4b28a47415eb77d59dbb
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -95
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/1"
+        name: Deletar Restaurante
+        meta:
+          id: req_7b1e066defbd45ac97e6f997befc8629
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -50
+        method: DELETE
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/1/taxa-entrega/12345-678"
+        name: Calcular Taxa de Entrega
+        meta:
+          id: req_b9a43f4d535a4b8d8b382c1ec9d164e7
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -65
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes"
+        name: Listar Restaurantes (com filtros)
+        meta:
+          id: req_cbc04f4c84a5436dbfa5c50bcfafb69c
+          created: 1698399600000
+          modified: 1698399600000
+          isPrivate: false
+          description: >-
+            Você pode filtrar por 'categoria' e 'ativo'.
+
+            Exemplo: {{ _.baseUrl }}/api/restaurantes?categoria=Brasileira&ativo=true
+          sortKey: -90
+        method: GET
+        parameters:
+          - name: categoria
+            value: Brasileira
+            disabled: false
+          - name: ativo
+            value: "true"
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/1/status"
+        name: Ativar/Desativar Restaurante
+        meta:
+          id: req_dcadb700a12e4961945f78c62fd5607b
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          description: Alterne o valor do parâmetro 'ativo' para 'true' ou 'false' para
+            ativar ou desativar o restaurante.
+          sortKey: -70
+        method: PATCH
+        parameters:
+          - name: ativo
+            value: "true"
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/categoria/Brasileira"
+        name: Buscar por Categoria
+        meta:
+          id: req_ddd7992912c54752babf8616e4baf8c7
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -80
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/1/pedidos"
+        name: Pedidos do Restaurante
+        meta:
+          id: req_df01474b3d494be9ac524f06f2f571b3
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -52
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/disponiveis"
+        name: Listar Restaurantes Disponíveis
+        meta:
+          id: req_f1b0d918b616448f962e8a1041948a7c
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -85
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes/proximos/12345-678"
+        name: Buscar Restaurantes Próximos
+        meta:
+          id: req_f48f0f8ab704441094a79b573c595911
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          description: Busca restaurantes próximos com base no CEP fornecido.
+          sortKey: -60
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/restaurantes"
+        name: Cadastrar Restaurante
+        meta:
+          id: req_f65f4d8e27a1459dbf32ff64b1b63e0d
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Sabor Brasileiro",
+            	"taxaEntrega": 10.50,
+            	"categoria": "Brasileira",
+            	"ativo": true,
+            	"endereco": "Rua Principal, 789",
+            	"avaliacao": 4.5,
+            	"telefone": "11987654321"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Relatórios
+    meta:
+      id: fld_d15a9602eb434719ab822f7e2ee2ac1e
+      created: 1698399600000
+      modified: 1698399600000
+      sortKey: -1763920318312
+    children:
+      - url: "{{ _.baseUrl }}/api/relatorios/pedidos-por-periodo"
+        name: Pedidos por Período
+        meta:
+          id: req_c9c0fb8c936747e3a738b3bda51e351c
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -70
+        method: GET
+        parameters:
+          - name: dataInicio
+            value: 2023-01-01
+          - name: dataFim
+            value: 2023-12-31
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/relatorios/produtos-mais-vendidos"
+        name: Top Produtos Mais Vendidos
+        meta:
+          id: req_d40b82a8580e4f85872e9661367cc8ad
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -90
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/relatorios/clientes-ativos"
+        name: Clientes Mais Ativos
+        meta:
+          id: req_eccbd9130abe40ababfe4d1728e9d9ea
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -80
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/relatorios/vendas-por-restaurante"
+        name: Vendas por Restaurante
+        meta:
+          id: req_f4cf03582d07488c833e9afc506ef613
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Pedidos
+    meta:
+      id: fld_e130843eac764a66b7fb6c1d0c131d56
+      created: 1698399600000
+      modified: 1698399600000
+      sortKey: -1763920318300
+    children:
+      - url: "{{ _.baseUrl }}/api/pedidos/calcular"
+        name: Calcular Total do Pedido
+        meta:
+          id: req_1198e7acafa045f796e38777d476bf49
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          description: Calcula o valor total de um pedido (incluindo taxa de entrega) sem
+            salvá-lo.
+          sortKey: -82
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"restaurante": { "id": 1 },
+            	"itens": [
+            		{
+            			"produto": { "id": 1 },
+            			"quantidade": 2
+            		}
+            	]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/pedidos/1"
+        name: Buscar Pedido por ID
+        meta:
+          id: req_1ba0a321b84f4a38b60ef793e8a581d4
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -95
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/pedidos/1"
+        name: Cancelar Pedido
+        meta:
+          id: req_56cbb1d4c4a04d44971e85974bc16fef
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          description: Altera o status do pedido para CANCELADO.
+          sortKey: -75
+        method: DELETE
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/pedidos"
+        name: Criar Pedido
+        meta:
+          id: req_9020b1da122f4be6a4444cd1fe5ab347
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"cliente": { "id": 1 },
+            	"restaurante": { "id": 1 },
+            	"enderecoEntrega": "Rua dos Testes, 123",
+            	"itens": [
+            		{
+            			"produto": { "id": 1 },
+            			"quantidade": 1
+            		}
+            	]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/pedidos"
+        name: Listar Pedidos (com filtros)
+        meta:
+          id: req_97666a739c614536aed8d704013ce341
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          description: Filtre por 'status' (PENDENTE, CONFIRMADO, etc.) e 'data'
+            (YYYY-MM-DD).
+          sortKey: -98
+        method: GET
+        parameters:
+          - name: status
+            value: PENDENTE
+            disabled: false
+          - name: data
+            value: 2023-10-27
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/pedidos/1/status"
+        name: Atualizar Status do Pedido
+        meta:
+          id: req_b0e99c2dae9d428f99a75876331eee2d
+          created: 1698399600000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -85
+        method: PATCH
+        parameters:
+          - name: status
+            value: CONFIRMADO
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Authentication
+    meta:
+      id: fld_9c48845b9d6b425f9b55ed14b5c4435d
+      created: 1716379200000
+      modified: 1716379200000
+      sortKey: -9999
+    children:
+      - url: "{{ _.baseUrl }}/api/auth/register"
+        name: Register User
+        meta:
+          id: req_3a79006bf2364f599d1b5b4de49e1d65
+          created: 1716379200000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -100
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"nome": "Admin User",
+            	"email": "admin@example.com",
+            	"senha": "password",
+            	"role": "ADMIN"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/auth/login"
+        name: Login and Get Token
+        meta:
+          id: req_abd82dbeb7c6403d883ff961f50b8479
+          created: 1716379200000
+          modified: 1716379200000
+          isPrivate: false
+          sortKey: -90
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"email": "admin@example.com",
+            	"senha": "password"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_5ec78edacc6a294cb88646291d25e6ba432cbc01
+    created: 1763920319020
+    modified: 1763920319020
+environments:
+  name: Base Environment
+  meta:
+    id: env_cce72b9f51004c82b050823b383113cf
+    created: 1698399600000
+    modified: 1698399600000
+    isPrivate: false
+  data:
+    baseUrl: http://localhost:8080
+  subEnvironments:
+    - name: Private
+      meta:
+        id: env_743e5fee93fc47a19cd1e7cb5b64cc47
+        created: 1716379200000
+        modified: 1763920469969
+        isPrivate: true
+        sortKey: 1716379200000
+      data:
+        jwt_token: "{% response 'body', 'req_abd82dbeb7c6403d883ff961f50b8479',
+          '$.token', 'never', 60 %}"
+      color: "#67159C"

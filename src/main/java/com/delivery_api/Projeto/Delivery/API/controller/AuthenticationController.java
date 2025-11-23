@@ -7,6 +7,10 @@ import com.delivery_api.Projeto.Delivery.API.dto.UserResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
 import com.delivery_api.Projeto.Delivery.API.repository.UsuarioRepository;
 import com.delivery_api.Projeto.Delivery.API.service.TokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,7 @@ import java.util.Date;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Autenticação", description = "Endpoints para registro, login e gerenciamento de usuários")
 public class AuthenticationController {
 
     @Autowired
@@ -39,6 +44,11 @@ public class AuthenticationController {
     private TokenService tokenService;
 
     @PostMapping("/login")
+    @Operation(summary = "Realiza o login do usuário", description = "Autentica um usuário com email e senha e retorna um token JWT.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login bem-sucedido"),
+            @ApiResponse(responseCode = "403", description = "Credenciais inválidas")
+    })
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthenticationDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.senha());
         Authentication auth = this.authenticationManager.authenticate(usernamePassword);
@@ -52,6 +62,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Registra um novo usuário", description = "Cria um novo usuário no sistema.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuário registrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Email já cadastrado ou dados inválidos")
+    })
     public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegisterDTO data) {
         if (this.usuarioRepository.findByEmail(data.email()) != null) {
             return ResponseEntity.badRequest().build();
@@ -70,6 +85,11 @@ public class AuthenticationController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "Retorna dados do usuário logado", description = "Endpoint protegido que retorna as informações do usuário autenticado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Dados do usuário retornados com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autorizado - token inválido ou ausente")
+    })
     public ResponseEntity<UserResponseDTO> me() {
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(new UserResponseDTO(usuario));

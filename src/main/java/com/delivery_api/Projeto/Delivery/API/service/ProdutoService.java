@@ -39,6 +39,7 @@ public class ProdutoService {
         produto.setPreco(produtoDTO.getPreco());
         produto.setCategoria(produtoDTO.getCategoria());
         produto.setDisponivel(produtoDTO.getDisponivel());
+        produto.setQuantidadeEstoque(produtoDTO.getQuantidadeEstoque());
         produto.setRestaurante(restaurante);
 
         Produto novoProduto = produtoRepository.save(produto);
@@ -57,6 +58,7 @@ public class ProdutoService {
         produto.setPreco(produtoDTO.getPreco());
         produto.setCategoria(produtoDTO.getCategoria());
         produto.setDisponivel(produtoDTO.getDisponivel());
+        produto.setQuantidadeEstoque(produtoDTO.getQuantidadeEstoque());
         produto.setRestaurante(restaurante);
 
         Produto produtoAtualizado = produtoRepository.save(produto);
@@ -126,6 +128,7 @@ public class ProdutoService {
         dto.setPreco(produto.getPreco());
         dto.setCategoria(produto.getCategoria());
         dto.setDisponivel(produto.getDisponivel());
+        dto.setQuantidadeEstoque(produto.getQuantidadeEstoque());
         dto.setRestauranteId(produto.getRestaurante().getId());
         dto.setNomeRestaurante(produto.getRestaurante().getNome());
         return dto;

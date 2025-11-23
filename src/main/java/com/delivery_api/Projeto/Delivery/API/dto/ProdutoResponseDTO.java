@@ -27,6 +27,9 @@ public class ProdutoResponseDTO {
     @Schema(description = "Indica se o produto está disponível", example = "true")
     private Boolean disponivel;
 
+    @Schema(description = "Quantidade do produto em estoque", example = "100")
+    private Integer quantidadeEstoque;
+
     @Schema(description = "ID do restaurante ao qual o produto pertence", example = "1")
     private Long restauranteId;
 

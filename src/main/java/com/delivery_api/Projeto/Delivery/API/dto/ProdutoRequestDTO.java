@@ -36,6 +36,11 @@ public class ProdutoRequestDTO {
     @Schema(description = "Indica se o produto está disponível", example = "true")
     private Boolean disponivel;
 
+    @NotNull(message = "Quantidade em estoque é obrigatória")
+    @PositiveOrZero(message = "Quantidade em estoque deve ser um valor positivo ou zero")
+    @Schema(description = "Quantidade do produto em estoque", example = "100")
+    private Integer quantidadeEstoque;
+
     @NotNull(message = "ID do restaurante é obrigatório")
     @Schema(description = "ID do restaurante ao qual o produto pertence", example = "1")
     private Long restauranteId;

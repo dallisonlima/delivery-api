@@ -68,6 +68,13 @@ public class PedidoService {
                 throw new BusinessException("Produto indisponível: " + produto.getNome());
             }
 
+            if (produto.getQuantidadeEstoque() < itemDTO.getQuantidade()) {
+                throw new BusinessException("Estoque insuficiente para o produto: " + produto.getNome());
+            }
+
+            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - itemDTO.getQuantidade());
+            produtoRepository.save(produto);
+
             ItemPedido itemPedido = new ItemPedido();
             itemPedido.setPedido(pedido);
             itemPedido.setProduto(produto);

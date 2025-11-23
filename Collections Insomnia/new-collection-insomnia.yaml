@@ -552,6 +552,7 @@ collection:
             	"preco": 45.00,
             	"categoria": "Prato Principal",
             	"disponivel": true,
+            	"quantidadeEstoque": 50,
             	"restauranteId": 1
             }
         headers:
@@ -646,6 +647,7 @@ collection:
             	"preco": 48.00,
             	"categoria": "Prato Principal",
             	"disponivel": true,
+            	"quantidadeEstoque": 30,
             	"restauranteId": 1
             }
         headers:

@@ -994,6 +994,26 @@ collection:
             send: true
             store: true
           rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/auth/me"
+        name: Get Logged-in User
+        meta:
+          id: req_12345_me_endpoint
+          created: 1716400000000
+          modified: 1716400000000
+          isPrivate: false
+          sortKey: -80
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
 cookieJar:
   name: Default Jar
   meta:

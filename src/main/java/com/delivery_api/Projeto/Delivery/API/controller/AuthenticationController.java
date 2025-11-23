@@ -13,11 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -52,7 +50,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody @Valid RegisterDTO data) {
+    public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegisterDTO data) {
         if (this.usuarioRepository.findByEmail(data.email()) != null) {
             return ResponseEntity.badRequest().build();
         }
@@ -60,8 +58,14 @@ public class AuthenticationController {
         String encryptedPassword = passwordEncoder.encode(data.senha());
         Usuario newUser = new Usuario(null, data.email(), encryptedPassword, data.nome(), data.role(), true, LocalDateTime.now(), data.restauranteId());
 
-        this.usuarioRepository.save(newUser);
+        Usuario savedUser = this.usuarioRepository.save(newUser);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new UserResponseDTO(savedUser));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> me() {
+        Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(new UserResponseDTO(usuario));
     }
 }

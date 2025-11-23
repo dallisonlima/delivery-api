@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -30,6 +31,7 @@ public class ProdutoController {
     private ProdutoService produtoService;
 
     @PostMapping
+    @PreAuthorize("hasRole('RESTAURANTE') or hasRole('ADMIN')")
     @Operation(summary = "Cadastra um novo produto", description = "Cadastra um novo produto associado a um restaurante.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Produto cadastrado com sucesso"),
@@ -49,6 +51,7 @@ public class ProdutoController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
     @Operation(summary = "Atualiza um produto", description = "Atualiza um produto específico com base nas informações fornecidas.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso"),
@@ -82,6 +85,7 @@ public class ProdutoController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
     @Operation(summary = "Deleta um produto", description = "Deleta um produto específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Produto deletado com sucesso"),
@@ -94,6 +98,7 @@ public class ProdutoController {
     }
 
     @PatchMapping("/{id}/disponibilidade")
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
     @Operation(summary = "Altera a disponibilidade de um produto", description = "Ativa ou desativa a disponibilidade de um produto específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Disponibilidade do produto alterada com sucesso"),

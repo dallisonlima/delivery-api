@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -41,6 +42,7 @@ public class RestauranteController {
     private PedidoService pedidoService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Cadastra um novo restaurante", description = "Cadastra um novo restaurante com base nas informações fornecidas.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Restaurante cadastrado com sucesso"),
@@ -89,6 +91,7 @@ public class RestauranteController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and @restauranteService.isOwner(#id))")
     @Operation(summary = "Atualiza um restaurante", description = "Atualiza um restaurante específico com base nas informações fornecidas.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Restaurante atualizado com sucesso"),
@@ -101,6 +104,7 @@ public class RestauranteController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Deleta um restaurante", description = "Deleta um restaurante específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Restaurante deletado com sucesso"),
@@ -134,6 +138,7 @@ public class RestauranteController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Ativa ou desativa um restaurante", description = "Ativa ou desativa um restaurante específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Status do restaurante alterado com sucesso"),
@@ -155,6 +160,7 @@ public class RestauranteController {
     }
 
     @GetMapping("/{restauranteId}/pedidos")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and @restauranteService.isOwner(#restauranteId))")
     @Operation(summary = "Busca os pedidos de um restaurante de forma paginada", description = "Busca todos os pedidos de um restaurante específico.")
     @ApiResponse(responseCode = "200", description = "Pedidos do restaurante listados com sucesso")
     public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> buscarPedidosPorRestaurante(

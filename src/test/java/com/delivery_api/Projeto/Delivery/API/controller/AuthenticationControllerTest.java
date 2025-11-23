@@ -48,13 +48,13 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void register_ShouldReturnUserResponse_WhenUserIsRegistered() throws Exception {
+    void register_ShouldReturnCreated_WhenUserIsRegistered() throws Exception {
         RegisterDTO registerDTO = new RegisterDTO("test@example.com", "password", "Test User", Role.CLIENTE, null);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerDTO)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.nome").value("Test User"))
                 .andExpect(jsonPath("$.email").value("test@example.com"))
@@ -80,6 +80,19 @@ class AuthenticationControllerTest {
                 .andExpect(jsonPath("$.expiration").isString())
                 .andExpect(jsonPath("$.user.id").value(user.getId()))
                 .andExpect(jsonPath("$.user.nome").value("Login User"));
+    }
+
+    @Test
+    void login_ShouldReturnForbidden_WhenCredentialsAreInvalid() throws Exception {
+        String rawPassword = "password";
+        Usuario user = new Usuario(1L, "invalid@example.com", passwordEncoder.encode(rawPassword), "Invalid User", Role.CLIENTE, true, LocalDateTime.now(), null);
+        usuarioRepository.save(user);
+        AuthenticationDTO authDTO = new AuthenticationDTO("invalid@example.com", "wrongpassword");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(authDTO)))
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -4,16 +4,20 @@ import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
+import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
 import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
+import com.delivery_api.Projeto.Delivery.API.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -101,6 +105,17 @@ public class ProdutoService {
     public Page<ProdutoResponseDTO> buscarPorNome(String nome, Pageable pageable) {
         return produtoRepository.findByNomeContainingIgnoreCase(nome, pageable)
                 .map(this::toProdutoResponseDTO);
+    }
+
+    public boolean isOwner(Long produtoId) {
+        Usuario currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null || currentUser.getRestauranteId() == null) {
+            return false;
+        }
+
+        return produtoRepository.findById(produtoId)
+                .map(produto -> Objects.equals(produto.getRestaurante().getId(), currentUser.getRestauranteId()))
+                .orElse(false);
     }
 
     private ProdutoResponseDTO toProdutoResponseDTO(Produto produto) {

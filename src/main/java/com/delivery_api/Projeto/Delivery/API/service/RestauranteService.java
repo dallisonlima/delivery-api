@@ -5,10 +5,12 @@ import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
+import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
 import com.delivery_api.Projeto.Delivery.API.repository.RestauranteSpecs;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
+import com.delivery_api.Projeto.Delivery.API.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -129,6 +131,14 @@ public class RestauranteService {
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + restauranteId));
         return restaurante.getTaxaEntrega();
+    }
+
+    public boolean isOwner(Long restauranteId) {
+        Usuario currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null || currentUser.getRestauranteId() == null) {
+            return false;
+        }
+        return currentUser.getRestauranteId().equals(restauranteId);
     }
 
     private RestauranteResponseDTO toRestauranteResponseDTO(Restaurante restaurante) {

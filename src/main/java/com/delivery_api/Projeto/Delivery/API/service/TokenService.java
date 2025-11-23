@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.Clock;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,12 @@ public class TokenService {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    private final Clock clock;
+
+    public TokenService(Clock clock) {
+        this.clock = clock;
+    }
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
@@ -35,7 +42,7 @@ public class TokenService {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        Date now = new Date();
+        Date now = Date.from(clock.instant());
         Date expiryDate = new Date(now.getTime() + 86400000); // 24 horas
 
         return Jwts.builder()
@@ -69,7 +76,7 @@ public class TokenService {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        return extractExpiration(token).before(Date.from(clock.instant()));
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -34,6 +35,7 @@ public class PedidoController {
     private PedidoService pedidoService;
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE')")
     @Operation(summary = "Cria um novo pedido", description = "Cria um novo pedido com base nas informações fornecidas.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso"),
@@ -53,6 +55,7 @@ public class PedidoController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Lista todos os pedidos de forma paginada", description = "Lista todos os pedidos, com a opção de filtrar por status e data.")
     @ApiResponse(responseCode = "200", description = "Pedidos listados com sucesso")
     public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> listar(
@@ -63,7 +66,26 @@ public class PedidoController {
         return ResponseEntity.ok(new PagedResponseWrapper<>(pedidos));
     }
 
+    @GetMapping("/meus")
+    @PreAuthorize("hasRole('CLIENTE')")
+    @Operation(summary = "Lista os pedidos do cliente logado", description = "Lista todos os pedidos feitos pelo cliente autenticado.")
+    @ApiResponse(responseCode = "200", description = "Pedidos listados com sucesso")
+    public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> listarMeusPedidos(@PageableDefault(size = 10) Pageable pageable) {
+        Page<PedidoResponseDTO> pedidos = pedidoService.listarMeusPedidos(pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(pedidos));
+    }
+
+    @GetMapping("/restaurante")
+    @PreAuthorize("hasRole('RESTAURANTE')")
+    @Operation(summary = "Lista os pedidos do restaurante do usuário logado", description = "Lista todos os pedidos recebidos pelo restaurante do usuário autenticado.")
+    @ApiResponse(responseCode = "200", description = "Pedidos listados com sucesso")
+    public ResponseEntity<PagedResponseWrapper<PedidoResponseDTO>> listarPedidosRestaurante(@PageableDefault(size = 10) Pageable pageable) {
+        Page<PedidoResponseDTO> pedidos = pedidoService.listarPedidosDoRestaurante(pageable);
+        return ResponseEntity.ok(new PagedResponseWrapper<>(pedidos));
+    }
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @pedidoService.canAccess(#id)")
     @Operation(summary = "Busca um pedido por ID", description = "Busca um pedido específico pelo seu ID.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedido encontrado com sucesso"),
@@ -75,6 +97,7 @@ public class PedidoController {
     }
 
     @PatchMapping("/{pedidoId}/status")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RESTAURANTE')")
     @Operation(summary = "Atualiza o status de um pedido", description = "Atualiza o status de um pedido específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Status do pedido atualizado com sucesso"),
@@ -89,6 +112,7 @@ public class PedidoController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Cancela um pedido", description = "Cancela um pedido específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedido cancelado com sucesso"),

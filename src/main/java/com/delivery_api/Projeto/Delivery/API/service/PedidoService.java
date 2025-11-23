@@ -8,6 +8,7 @@ import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.repository.*;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.BusinessException;
+import com.delivery_api.Projeto.Delivery.API.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -120,6 +122,21 @@ public class PedidoService {
     }
 
     @Transactional(readOnly = true)
+    public Page<PedidoResponseDTO> listarMeusPedidos(Pageable pageable) {
+        Long clienteId = SecurityUtils.getCurrentUserId();
+        return buscarPedidosPorCliente(clienteId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PedidoResponseDTO> listarPedidosDoRestaurante(Pageable pageable) {
+        Usuario currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null || currentUser.getRestauranteId() == null) {
+            return Page.empty();
+        }
+        return buscarPedidosPorRestaurante(currentUser.getRestauranteId(), pageable);
+    }
+
+    @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPorId(Long id) {
         return pedidoRepository.findById(id)
                 .map(this::toPedidoResponseDTO)
@@ -158,6 +175,19 @@ public class PedidoService {
             total = total.add(produto.getPreco().multiply(new BigDecimal(itemDTO.getQuantidade())));
         }
         return total.add(restaurante.getTaxaEntrega());
+    }
+
+    public boolean canAccess(Long pedidoId) {
+        Usuario currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            return false;
+        }
+
+        return pedidoRepository.findById(pedidoId).map(pedido -> {
+            boolean isClientOwner = Objects.equals(pedido.getCliente().getId(), currentUser.getId());
+            boolean isRestaurantOwner = Objects.equals(pedido.getRestaurante().getId(), currentUser.getRestauranteId());
+            return isClientOwner || isRestaurantOwner;
+        }).orElse(false);
     }
 
     public boolean isValidTransition(StatusPedido currentStatus, StatusPedido newStatus) {

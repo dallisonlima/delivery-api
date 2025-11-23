@@ -16,7 +16,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -60,7 +62,11 @@ public class AuthenticationController {
 
         Usuario savedUser = this.usuarioRepository.save(newUser);
 
-        return ResponseEntity.ok(new UserResponseDTO(savedUser));
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath().path("/api/auth/me")
+                .build().toUri();
+
+        return ResponseEntity.created(location).body(new UserResponseDTO(savedUser));
     }
 
     @GetMapping("/me")

@@ -27,6 +27,9 @@ public class Produto {
 
     private Boolean disponivel;
 
+    @Column(name = "quantidade_estoque", nullable = false)
+    private Integer quantidadeEstoque = 0;
+
     @ManyToOne
     @JoinColumn(name = "restaurante_id")
     private Restaurante restaurante;

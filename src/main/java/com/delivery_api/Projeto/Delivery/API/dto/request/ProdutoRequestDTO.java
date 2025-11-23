@@ -1,4 +1,4 @@
-package com.delivery_api.Projeto.Delivery.API.dto;
+package com.delivery_api.Projeto.Delivery.API.dto.request;
 
 import com.delivery_api.Projeto.Delivery.API.validation.ValidCategoria;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,6 +35,11 @@ public class ProdutoRequestDTO {
     @NotNull(message = "Disponibilidade do produto é obrigatória")
     @Schema(description = "Indica se o produto está disponível", example = "true")
     private Boolean disponivel;
+
+    @NotNull(message = "Quantidade em estoque é obrigatória")
+    @PositiveOrZero(message = "Quantidade em estoque deve ser um valor positivo ou zero")
+    @Schema(description = "Quantidade do produto em estoque", example = "100")
+    private Integer quantidadeEstoque;
 
     @NotNull(message = "ID do restaurante é obrigatório")
     @Schema(description = "ID do restaurante ao qual o produto pertence", example = "1")

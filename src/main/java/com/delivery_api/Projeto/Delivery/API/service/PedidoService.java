@@ -1,9 +1,9 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
-import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoResponseDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.ItemPedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ItemPedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.PedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.repository.*;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
@@ -67,6 +67,13 @@ public class PedidoService {
             if (!produto.getDisponivel()) {
                 throw new BusinessException("Produto indisponível: " + produto.getNome());
             }
+
+            if (produto.getQuantidadeEstoque() < itemDTO.getQuantidade()) {
+                throw new BusinessException("Estoque insuficiente para o produto: " + produto.getNome());
+            }
+
+            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - itemDTO.getQuantidade());
+            produtoRepository.save(produto);
 
             ItemPedido itemPedido = new ItemPedido();
             itemPedido.setPedido(pedido);

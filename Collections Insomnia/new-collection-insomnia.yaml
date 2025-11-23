@@ -67,8 +67,13 @@ collection:
             {
             	"nome": "Novo Cliente",
             	"email": "cliente@example.com",
-            	"telefone": "99999-8888",
-            	"endereco": "Rua dos Testes, 123"
+            	"telefone": "11999998888",
+            	"cep": "01000-000",
+            	"logradouro": "Rua dos Testes",
+            	"numero": "123",
+            	"bairro": "Centro",
+            	"cidade": "Sao Paulo",
+            	"estado": "SP"
             }
         headers:
           - name: Content-Type
@@ -145,6 +150,50 @@ collection:
           isPrivate: false
           sortKey: -80
         method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes/email/cliente@example.com"
+        name: Buscar Cliente por Email
+        meta:
+          id: req_cliente_by_email
+          created: 1716400000000
+          modified: 1716400000000
+          isPrivate: false
+          sortKey: -75
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _.jwt_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseUrl }}/api/clientes/buscar?nome=Cliente"
+        name: Buscar Clientes por Nome
+        meta:
+          id: req_clientes_by_name
+          created: 1716400000000
+          modified: 1716400000000
+          isPrivate: false
+          sortKey: -65
+        method: GET
+        parameters:
+          - name: nome
+            value: Cliente
+            disabled: false
         authentication:
           type: bearer
           token: "{{ _.jwt_token }}"
@@ -552,6 +601,7 @@ collection:
             	"preco": 45.00,
             	"categoria": "Prato Principal",
             	"disponivel": true,
+            	"quantidadeEstoque": 50,
             	"restauranteId": 1
             }
         headers:
@@ -646,6 +696,7 @@ collection:
             	"preco": 48.00,
             	"categoria": "Prato Principal",
             	"disponivel": true,
+            	"quantidadeEstoque": 30,
             	"restauranteId": 1
             }
         headers:
@@ -855,7 +906,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.baseUrl }}/api/restaurantes/1/taxa-entrega/12345-678"
+      - url: "{{ _.baseUrl }}/api/restaurantes/1/taxa-entrega"
         name: Calcular Taxa de Entrega
         meta:
           id: req_c197848a935d4836be21c6f3fecf94c0
@@ -915,27 +966,6 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.baseUrl }}/api/restaurantes/proximos/12345-678"
-        name: Buscar Restaurantes Próximos
-        meta:
-          id: req_cfa1db79faf1465dbe7cbb28257f4603
-          created: 1698399600000
-          modified: 1716379200000
-          isPrivate: false
-          description: Busca restaurantes próximos com base no CEP fornecido.
-          sortKey: -60
-        method: GET
-        authentication:
-          type: bearer
-          token: "{{ _.jwt_token }}"
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
       - url: "{{ _.baseUrl }}/api/restaurantes"
         name: Cadastrar Restaurante
         meta:
@@ -953,9 +983,16 @@ collection:
             	"taxaEntrega": 10.50,
             	"categoria": "Brasileira",
             	"ativo": true,
-            	"endereco": "Rua Principal, 789",
+            	"cep": "01000-000",
+            	"logradouro": "Rua Principal",
+            	"numero": "789",
+            	"bairro": "Centro",
+            	"cidade": "Sao Paulo",
+            	"estado": "SP",
             	"avaliacao": 4.5,
-            	"telefone": "11987654321"
+            	"telefone": "11987654321",
+            	"tempoDeEntrega": 30,
+            	"horarioFuncionamento": "09:00-22:00"
             }
         headers:
           - name: Content-Type

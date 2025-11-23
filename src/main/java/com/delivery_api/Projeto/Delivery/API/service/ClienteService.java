@@ -1,7 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
-import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.ClienteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.ClienteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ClienteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
 import com.delivery_api.Projeto.Delivery.API.entity.Endereco;

@@ -1,6 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.IdRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.PedidoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.enums.Role;
 import com.delivery_api.Projeto.Delivery.API.repository.*;
@@ -16,7 +17,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -50,8 +50,12 @@ class PedidoControllerAuthTest {
 
     @BeforeEach
     void setUp() {
-        cliente = clienteRepository.save(new Cliente());
-        restaurante = restauranteRepository.save(new Restaurante());
+        cliente = new Cliente();
+        cliente.setAtivo(true);
+        cliente = clienteRepository.save(cliente);
+
+        restaurante = new Restaurante();
+        restaurante = restauranteRepository.save(restaurante);
 
         pedido = new Pedido();
         pedido.setCliente(cliente);
@@ -72,6 +76,20 @@ class PedidoControllerAuthTest {
         clienteRepository.deleteAll();
         restauranteRepository.deleteAll();
         usuarioRepository.deleteAll();
+    }
+
+    private PedidoRequestDTO createValidPedidoRequestDTO() {
+        IdRequestDTO clienteId = new IdRequestDTO();
+        clienteId.setId(cliente.getId());
+
+        IdRequestDTO restauranteId = new IdRequestDTO();
+        restauranteId.setId(restaurante.getId());
+
+        PedidoRequestDTO dto = new PedidoRequestDTO();
+        dto.setCliente(clienteId);
+        dto.setRestaurante(restauranteId);
+        dto.setItens(Collections.emptyList());
+        return dto;
     }
 
     // --- GET /api/pedidos ---
@@ -117,27 +135,18 @@ class PedidoControllerAuthTest {
     @Test
     @WithMockUser(roles = "CLIENTE")
     void criar_ShouldAllow_WhenUserIsCliente() throws Exception {
-        PedidoRequestDTO dto = new PedidoRequestDTO();
-        dto.setCliente(new PedidoRequestDTO.ClienteId(cliente.getId()));
-        dto.setRestaurante(new PedidoRequestDTO.RestauranteId(restaurante.getId()));
-        dto.setItens(Collections.emptyList());
-
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(objectMapper.writeValueAsString(createValidPedidoRequestDTO())))
                 .andExpect(status().isCreated());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void criar_ShouldForbid_WhenUserIsAdmin() throws Exception {
-        PedidoRequestDTO dto = new PedidoRequestDTO();
-        dto.setCliente(new PedidoRequestDTO.ClienteId(cliente.getId()));
-        dto.setRestaurante(new PedidoRequestDTO.RestauranteId(restaurante.getId()));
-
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(objectMapper.writeValueAsString(createValidPedidoRequestDTO())))
                 .andExpect(status().isForbidden());
     }
 

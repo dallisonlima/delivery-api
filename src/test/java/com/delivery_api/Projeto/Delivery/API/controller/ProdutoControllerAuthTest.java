@@ -1,6 +1,6 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.ProdutoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Produto;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;

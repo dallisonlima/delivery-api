@@ -1,9 +1,9 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
 import com.delivery_api.Projeto.Delivery.API.dto.AuthenticationDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.LoginResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.LoginResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.RegisterDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.UserResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.UserResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
 import com.delivery_api.Projeto.Delivery.API.repository.UsuarioRepository;
 import com.delivery_api.Projeto.Delivery.API.service.TokenService;

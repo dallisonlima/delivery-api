@@ -1,7 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
 import com.delivery_api.Projeto.Delivery.API.dto.ClientesMaisAtivosDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ProdutosMaisVendidosDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.VendasPorRestauranteDTO;
 import com.delivery_api.Projeto.Delivery.API.repository.ItemPedidoRepository;

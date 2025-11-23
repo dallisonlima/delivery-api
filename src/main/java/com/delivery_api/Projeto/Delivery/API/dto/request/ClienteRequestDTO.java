@@ -1,4 +1,4 @@
-package com.delivery_api.Projeto.Delivery.API.dto;
+package com.delivery_api.Projeto.Delivery.API.dto.request;
 
 import com.delivery_api.Projeto.Delivery.API.validation.ValidCEP;
 import com.delivery_api.Projeto.Delivery.API.validation.ValidTelefone;

@@ -1,8 +1,8 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
 import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.RestauranteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.RestauranteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
@@ -12,6 +12,8 @@ import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
 import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
 import com.delivery_api.Projeto.Delivery.API.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,7 @@ public class RestauranteService {
     @Autowired
     private RestauranteRepository restauranteRepository;
 
+    @CacheEvict(value = "restaurantes", allEntries = true)
     public RestauranteResponseDTO cadastrar(RestauranteRequestDTO restauranteDTO) {
         Restaurante restaurante = new Restaurante();
         restaurante.setNome(restauranteDTO.getNome());
@@ -53,6 +56,7 @@ public class RestauranteService {
         return toRestauranteResponseDTO(restauranteSalvo);
     }
 
+    @CacheEvict(value = "restaurantes", allEntries = true)
     public RestauranteResponseDTO atualizar(Long id, RestauranteRequestDTO restauranteDTO) {
         Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
@@ -78,6 +82,7 @@ public class RestauranteService {
         return toRestauranteResponseDTO(restauranteSalvo);
     }
 
+    @CacheEvict(value = "restaurantes", allEntries = true)
     public RestauranteResponseDTO ativarOuDesativar(Long id, boolean ativo) {
         Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
@@ -86,6 +91,7 @@ public class RestauranteService {
         return toRestauranteResponseDTO(restauranteSalvo);
     }
 
+    @CacheEvict(value = "restaurantes", allEntries = true)
     public void deletar(Long id) {
         if (!restauranteRepository.existsById(id)) {
             throw new EntityNotFoundException("Restaurante não encontrado: " + id);
@@ -97,6 +103,7 @@ public class RestauranteService {
         }
     }
 
+    @Cacheable("restaurantes")
     @Transactional(readOnly = true)
     public Page<RestauranteResponseDTO> listar(String categoria, Boolean ativo, Pageable pageable) {
         Specification<Restaurante> spec = Specification.where(null);
@@ -109,11 +116,13 @@ public class RestauranteService {
         return restauranteRepository.findAll(spec, pageable).map(this::toRestauranteResponseDTO);
     }
 
+    @Cacheable("restaurantes")
     @Transactional(readOnly = true)
     public Page<RestauranteResponseDTO> buscarRestaurantesDisponiveis(Pageable pageable) {
         return restauranteRepository.findByAtivoTrue(pageable).map(this::toRestauranteResponseDTO);
     }
 
+    @Cacheable(value = "restaurantes", key = "#id")
     @Transactional(readOnly = true)
     public RestauranteResponseDTO buscarPorId(Long id) {
         return restauranteRepository.findById(id)
@@ -121,6 +130,7 @@ public class RestauranteService {
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
     }
     
+    @Cacheable("restaurantes")
     @Transactional(readOnly = true)
     public Page<RestauranteResponseDTO> buscarPorCategoria(String categoria, Pageable pageable) {
         return restauranteRepository.findByCategoria(categoria, pageable).map(this::toRestauranteResponseDTO);

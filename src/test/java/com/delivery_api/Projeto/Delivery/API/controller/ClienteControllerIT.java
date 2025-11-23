@@ -1,6 +1,6 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.dto.ClienteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.ClienteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;

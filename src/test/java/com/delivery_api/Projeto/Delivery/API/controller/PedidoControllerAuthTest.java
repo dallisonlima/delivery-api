@@ -1,7 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.dto.IdRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.IdRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.PedidoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.enums.Role;
 import com.delivery_api.Projeto.Delivery.API.repository.*;

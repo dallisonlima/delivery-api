@@ -1,9 +1,9 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
-import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoResponseDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.PedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.ItemPedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ItemPedidoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.PedidoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.PedidoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
 import com.delivery_api.Projeto.Delivery.API.repository.*;
 import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;

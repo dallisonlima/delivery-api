@@ -1,8 +1,8 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
 import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.RestauranteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.RestauranteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.RestauranteResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;

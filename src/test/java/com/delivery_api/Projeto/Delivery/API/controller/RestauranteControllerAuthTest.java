@@ -1,6 +1,6 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.dto.RestauranteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.RestauranteRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Restaurante;
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
 import com.delivery_api.Projeto.Delivery.API.enums.Role;

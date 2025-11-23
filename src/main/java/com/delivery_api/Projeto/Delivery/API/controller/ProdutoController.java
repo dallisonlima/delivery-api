@@ -1,7 +1,7 @@
 package com.delivery_api.Projeto.Delivery.API.controller;
 
-import com.delivery_api.Projeto.Delivery.API.dto.ProdutoRequestDTO;
-import com.delivery_api.Projeto.Delivery.API.dto.ProdutoResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.request.ProdutoRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ProdutoResponseDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.response.ApiResponseWrapper;
 import com.delivery_api.Projeto.Delivery.API.dto.response.PagedResponseWrapper;
 import com.delivery_api.Projeto.Delivery.API.service.ProdutoService;

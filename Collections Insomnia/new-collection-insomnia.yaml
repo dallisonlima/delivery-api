@@ -67,8 +67,13 @@ collection:
             {
             	"nome": "Novo Cliente",
             	"email": "cliente@example.com",
-            	"telefone": "99999-8888",
-            	"endereco": "Rua dos Testes, 123"
+            	"telefone": "11999998888",
+            	"cep": "01000-000",
+            	"logradouro": "Rua dos Testes",
+            	"numero": "123",
+            	"bairro": "Centro",
+            	"cidade": "Sao Paulo",
+            	"estado": "SP"
             }
         headers:
           - name: Content-Type

@@ -1,4 +1,4 @@
-package com.delivery_api.Projeto.Delivery.API.dto;
+package com.delivery_api.Projeto.Delivery.API.dto.response;
 
 import com.delivery_api.Projeto.Delivery.API.entity.Usuario;
 import com.delivery_api.Projeto.Delivery.API.enums.Role;

@@ -1,5 +1,6 @@
-package com.delivery_api.Projeto.Delivery.API.dto;
+package com.delivery_api.Projeto.Delivery.API.dto.response;
 
+import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

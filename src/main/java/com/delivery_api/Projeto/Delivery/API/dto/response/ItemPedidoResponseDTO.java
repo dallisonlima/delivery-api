@@ -1,4 +1,4 @@
-package com.delivery_api.Projeto.Delivery.API.dto;
+package com.delivery_api.Projeto.Delivery.API.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

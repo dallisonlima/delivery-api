@@ -25,6 +25,12 @@ import java.util.Arrays;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
+    private static final String[] SWAGGER_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
@@ -32,6 +38,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/restaurantes").permitAll()

@@ -11,7 +11,7 @@ API RESTful para um sistema de delivery, desenvolvida com as tecnologias mais re
 
 - **Autenticação e Autorização:** Sistema de segurança completo com JWT e controle de acesso baseado em perfis (`ADMIN`, `RESTAURANTE`, `CLIENTE`).
 - **Gerenciamento de Restaurantes:** CRUD completo para restaurantes.
-- **Gerenciamento de Produtos:** CRUD completo para produtos, associados a restaurantes.
+- **Gerenciamento de Produtos:** CRUD completo para produtos, associados a restaurantes, com controle de estoque.
 - **Gerenciamento de Pedidos:** Fluxo completo para criação e acompanhamento de pedidos.
 - **Gerenciamento de Clientes:** Operações básicas de CRUD para clientes.
 - **Documentação Interativa:** Interface Swagger para explorar e testar todos os endpoints da API.
@@ -58,7 +58,7 @@ A API possui uma documentação interativa completa gerada com Swagger (Springdo
 ### Testando Endpoints Protegidos no Swagger
 
 1.  Primeiro, obtenha um token JWT através do endpoint `POST /api/auth/login`.
-2.  Copie o token recebido na resposta.
+2.  Copie o valor do campo `token` da resposta.
 3.  Clique no botão **"Authorize"** no canto superior direito da página do Swagger.
 4.  Na janela que abrir, cole o token no campo "Value" e clique em "Authorize".
 5.  Pronto! Agora você pode executar os endpoints que exigem autenticação.

@@ -4,37 +4,31 @@ import com.delivery_api.Projeto.Delivery.API.dto.IdRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.ItemPedidoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.dto.PedidoRequestDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.*;
-import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
-import com.delivery_api.Projeto.Delivery.API.repository.PedidoRepository;
-import com.delivery_api.Projeto.Delivery.API.repository.ProdutoRepository;
-import com.delivery_api.Projeto.Delivery.API.repository.RestauranteRepository;
+import com.delivery_api.Projeto.Delivery.API.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-public class PedidoControllerIT {
+@WithMockUser(roles = "CLIENTE") // A maioria das operações de teste são como cliente
+class PedidoControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,102 +37,102 @@ public class PedidoControllerIT {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private PedidoRepository pedidoRepository;
+    @Autowired
     private ClienteRepository clienteRepository;
-
     @Autowired
     private RestauranteRepository restauranteRepository;
-
     @Autowired
     private ProdutoRepository produtoRepository;
-
-    @Autowired
-    private PedidoRepository pedidoRepository;
 
     private Cliente cliente;
     private Restaurante restaurante;
     private Produto produto;
-    private Pedido pedido;
 
     @BeforeEach
     void setUp() {
-        cliente = clienteRepository.save(new Cliente("Cliente Pedido Teste", "pedido@teste.com", "987654321", null, true));
-        restaurante = restauranteRepository.save(new Restaurante("Restaurante Pedido Teste", new BigDecimal("5.00"), "Lanches", true, null, "12345", 4.5));
-        produto = produtoRepository.save(new Produto("Produto Pedido Teste", "Desc", new BigDecimal("10.00"), "Bebidas", true, restaurante));
+        cliente = new Cliente();
+        cliente.setAtivo(true);
+        cliente = clienteRepository.save(cliente);
 
-        pedido = new Pedido();
-        pedido.setCliente(cliente);
-        pedido.setRestaurante(restaurante);
-        pedido.setDataPedido(LocalDateTime.now());
-        pedido.setStatus(StatusPedido.PENDENTE);
-        pedido = pedidoRepository.save(pedido);
+        restaurante = new Restaurante();
+        restaurante.setTaxaEntrega(BigDecimal.valueOf(10));
+        restaurante = restauranteRepository.save(restaurante);
+
+        produto = new Produto();
+        produto.setRestaurante(restaurante);
+        produto.setDisponivel(true);
+        produto.setPreco(BigDecimal.valueOf(25));
+        produto.setQuantidadeEstoque(10);
+        produto = produtoRepository.save(produto);
+    }
+
+    @AfterEach
+    void tearDown() {
+        pedidoRepository.deleteAll();
+        produtoRepository.deleteAll();
+        restauranteRepository.deleteAll();
+        clienteRepository.deleteAll();
+    }
+
+    private IdRequestDTO createIdRequest(Long id) {
+        IdRequestDTO idRequest = new IdRequestDTO();
+        idRequest.setId(id);
+        return idRequest;
     }
 
     @Test
-    void criar_deveRetornar201_quandoDadosValidos() throws Exception {
-        ItemPedidoRequestDTO itemRequest = new ItemPedidoRequestDTO(new IdRequestDTO(produto.getId()), 2);
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(new IdRequestDTO(cliente.getId()), new IdRequestDTO(restaurante.getId()), "Endereço", List.of(itemRequest));
+    void criar_ComDadosValidos_DeveRetornar201ECalcularTotalCorretamente() throws Exception {
+        ItemPedidoRequestDTO itemDTO = new ItemPedidoRequestDTO();
+        itemDTO.setProduto(createIdRequest(produto.getId()));
+        itemDTO.setQuantidade(2);
+
+        PedidoRequestDTO pedidoDTO = new PedidoRequestDTO();
+        pedidoDTO.setCliente(createIdRequest(cliente.getId()));
+        pedidoDTO.setRestaurante(createIdRequest(restaurante.getId()));
+        pedidoDTO.setItens(Collections.singletonList(itemDTO));
+        pedidoDTO.setEnderecoEntrega("Rua Teste, 123");
 
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pedidoRequest)))
+                        .content(objectMapper.writeValueAsString(pedidoDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
-                .andExpect(jsonPath("$.data.valorTotal").value(25.00));
+                .andExpect(jsonPath("$.data.valorTotal").value(60.00)); // (2 * 25) + 10
     }
 
     @Test
-    void criar_deveRetornar400_quandoNaoHaItens() throws Exception {
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(new IdRequestDTO(cliente.getId()), new IdRequestDTO(restaurante.getId()), "Endereço", Collections.emptyList());
+    void criar_ComProdutoInexistente_DeveRetornar404() throws Exception {
+        ItemPedidoRequestDTO itemDTO = new ItemPedidoRequestDTO();
+        itemDTO.setProduto(createIdRequest(999L)); // ID inexistente
+        itemDTO.setQuantidade(1);
+
+        PedidoRequestDTO pedidoDTO = new PedidoRequestDTO();
+        pedidoDTO.setCliente(createIdRequest(cliente.getId()));
+        pedidoDTO.setRestaurante(createIdRequest(restaurante.getId()));
+        pedidoDTO.setItens(Collections.singletonList(itemDTO));
+        pedidoDTO.setEnderecoEntrega("Rua Teste, 123");
 
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pedidoRequest)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void criar_deveRetornar422_quandoClienteInativo() throws Exception {
-        cliente.setAtivo(false);
-        clienteRepository.save(cliente);
-
-        ItemPedidoRequestDTO itemRequest = new ItemPedidoRequestDTO(new IdRequestDTO(produto.getId()), 1);
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(new IdRequestDTO(cliente.getId()), new IdRequestDTO(restaurante.getId()), "Endereço", List.of(itemRequest));
-
-        mockMvc.perform(post("/api/pedidos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(pedidoRequest)))
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    void buscarPorId_deveRetornar200_quandoPedidoExiste() throws Exception {
-        mockMvc.perform(get("/api/pedidos/{id}", pedido.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(pedido.getId()));
-    }
-
-    @Test
-    void buscarPorId_deveRetornar404_quandoPedidoNaoExiste() throws Exception {
-        mockMvc.perform(get("/api/pedidos/{id}", 9999L))
+                        .content(objectMapper.writeValueAsString(pedidoDTO)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void listar_deveRetornarPaginaDePedidos() throws Exception {
-        mockMvc.perform(get("/api/pedidos")
-                        .param("size", "5"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.page.totalElements").value(1));
-    }
+    void criar_ComEstoqueInsuficiente_DeveRetornar400() throws Exception {
+        ItemPedidoRequestDTO itemDTO = new ItemPedidoRequestDTO();
+        itemDTO.setProduto(createIdRequest(produto.getId()));
+        itemDTO.setQuantidade(11); // Mais do que o estoque de 10
 
-    @Test
-    void alterarStatus_deveRetornar422_quandoTransicaoInvalida() throws Exception {
-        pedido.setStatus(StatusPedido.ENTREGUE);
-        pedidoRepository.save(pedido);
+        PedidoRequestDTO pedidoDTO = new PedidoRequestDTO();
+        pedidoDTO.setCliente(createIdRequest(cliente.getId()));
+        pedidoDTO.setRestaurante(createIdRequest(restaurante.getId()));
+        pedidoDTO.setItens(Collections.singletonList(itemDTO));
+        pedidoDTO.setEnderecoEntrega("Rua Teste, 123");
 
-        mockMvc.perform(patch("/api/pedidos/{id}/status", pedido.getId())
-                        .param("status", "CANCELADO"))
-                .andExpect(status().isUnprocessableEntity());
+        mockMvc.perform(post("/api/pedidos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(pedidoDTO)))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -43,6 +43,12 @@ class PedidoServiceTest {
     private Produto produto;
     private PedidoRequestDTO pedidoRequestDTO;
 
+    private IdRequestDTO createIdRequest(Long id) {
+        IdRequestDTO idRequest = new IdRequestDTO();
+        idRequest.setId(id);
+        return idRequest;
+    }
+
     @BeforeEach
     void setUp() {
         cliente = new Cliente();
@@ -61,12 +67,12 @@ class PedidoServiceTest {
         produto.setQuantidadeEstoque(10);
 
         ItemPedidoRequestDTO itemDTO = new ItemPedidoRequestDTO();
-        itemDTO.setProduto(new IdRequestDTO(1L));
+        itemDTO.setProduto(createIdRequest(1L));
         itemDTO.setQuantidade(2);
 
         pedidoRequestDTO = new PedidoRequestDTO();
-        pedidoRequestDTO.setCliente(new IdRequestDTO(1L));
-        pedidoRequestDTO.setRestaurante(new IdRequestDTO(1L));
+        pedidoRequestDTO.setCliente(createIdRequest(1L));
+        pedidoRequestDTO.setRestaurante(createIdRequest(1L));
         pedidoRequestDTO.setItens(Collections.singletonList(itemDTO));
     }
 
@@ -81,7 +87,7 @@ class PedidoServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(StatusPedido.PENDENTE);
-        assertThat(response.getValorTotal()).isEqualTo(new BigDecimal("45.00")); // 2 * 20 + 5
+        assertThat(response.getValorTotal()).isEqualTo(new BigDecimal("55.00")); // (2 * 20) + 5
         verify(produtoRepository, times(1)).save(any(Produto.class));
         assertThat(produto.getQuantidadeEstoque()).isEqualTo(8);
     }

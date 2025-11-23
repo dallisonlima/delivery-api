@@ -1,118 +1,131 @@
 package com.delivery_api.Projeto.Delivery.API.service;
 
+import com.delivery_api.Projeto.Delivery.API.dto.request.ClienteRequestDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.response.ClienteResponseDTO;
+import com.delivery_api.Projeto.Delivery.API.dto.EnderecoDTO;
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
+import com.delivery_api.Projeto.Delivery.API.entity.Endereco;
 import com.delivery_api.Projeto.Delivery.API.repository.ClienteRepository;
-import org.springframework.transaction.annotation.Transactional;
+import com.delivery_api.Projeto.Delivery.API.exception.EntityNotFoundException;
+import com.delivery_api.Projeto.Delivery.API.exception.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class ClienteService {
+
     @Autowired
     private ClienteRepository clienteRepository;
 
-    /**
-     * Cadastrar novo cliente
-     */
-    public Cliente cadastrar(Cliente cliente) {
-        // Validar email único
-        if (clienteRepository.existsByEmail(cliente.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + cliente.getEmail());
+    public ClienteResponseDTO cadastrar(ClienteRequestDTO clienteDTO) {
+        if (clienteRepository.existsByEmail(clienteDTO.getEmail())) {
+            throw new ConflictException("Email já cadastrado: " + clienteDTO.getEmail());
         }
 
-        // Validações de negócio
-        validarDadosCliente(cliente);
-
-        // Definir como ativo por padrão
+        Cliente cliente = new Cliente();
+        cliente.setNome(clienteDTO.getNome());
+        cliente.setEmail(clienteDTO.getEmail());
+        cliente.setTelefone(clienteDTO.getTelefone());
         cliente.setAtivo(true);
 
-        return clienteRepository.save(cliente);
+        Endereco endereco = new Endereco();
+        endereco.setCep(clienteDTO.getCep());
+        endereco.setLogradouro(clienteDTO.getLogradouro());
+        endereco.setNumero(clienteDTO.getNumero());
+        endereco.setComplemento(clienteDTO.getComplemento());
+        endereco.setBairro(clienteDTO.getBairro());
+        endereco.setCidade(clienteDTO.getCidade());
+        endereco.setEstado(clienteDTO.getEstado());
+        cliente.setEndereco(endereco);
+
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return toClienteResponseDTO(clienteSalvo);
     }
 
-    /**
-     * Buscar cliente por ID
-     */
     @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorId(Long id) {
-        return clienteRepository.findById(id);
+    public ClienteResponseDTO buscarPorId(Long id) {
+        return clienteRepository.findById(id)
+                .map(this::toClienteResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
     }
 
-    /**
-     * Buscar cliente por email
-     */
     @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorEmail(String email) {
-        return clienteRepository.findByEmail(email);
+    public ClienteResponseDTO buscarPorEmail(String email) {
+        return clienteRepository.findByEmail(email)
+                .map(this::toClienteResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com o email: " + email));
     }
 
-    /**
-     * Listar todos os clientes ativos
-     */
     @Transactional(readOnly = true)
-    public List<Cliente> listarAtivos() {
-        return clienteRepository.findByAtivoTrue();
+    public Page<ClienteResponseDTO> listarAtivos(Pageable pageable) {
+        return clienteRepository.findByAtivoTrue(pageable).map(this::toClienteResponseDTO);
     }
 
-    /**
-     * Atualizar dados do cliente
-     */
-    public Cliente atualizar(Long id, Cliente clienteAtualizado) {
-        Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteDTO) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
 
-        // Verificar se email não está sendo usado por outro cliente
-        if (!cliente.getEmail().equals(clienteAtualizado.getEmail()) &&
-                clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + clienteAtualizado.getEmail());
+        if (!cliente.getEmail().equals(clienteDTO.getEmail()) &&
+                clienteRepository.existsByEmail(clienteDTO.getEmail())) {
+            throw new ConflictException("Email já cadastrado: " + clienteDTO.getEmail());
         }
 
-        // Atualizar campos
-        cliente.setNome(clienteAtualizado.getNome());
-        cliente.setEmail(clienteAtualizado.getEmail());
-        cliente.setTelefone(clienteAtualizado.getTelefone());
-        cliente.setEndereco(clienteAtualizado.getEndereco());
+        cliente.setNome(clienteDTO.getNome());
+        cliente.setEmail(clienteDTO.getEmail());
+        cliente.setTelefone(clienteDTO.getTelefone());
 
-        return clienteRepository.save(cliente);
+        Endereco endereco = cliente.getEndereco() != null ? cliente.getEndereco() : new Endereco();
+        endereco.setCep(clienteDTO.getCep());
+        endereco.setLogradouro(clienteDTO.getLogradouro());
+        endereco.setNumero(clienteDTO.getNumero());
+        endereco.setComplemento(clienteDTO.getComplemento());
+        endereco.setBairro(clienteDTO.getBairro());
+        endereco.setCidade(clienteDTO.getCidade());
+        endereco.setEstado(clienteDTO.getEstado());
+        cliente.setEndereco(endereco);
+
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return toClienteResponseDTO(clienteSalvo);
     }
 
-    /**
-     * Inativar cliente (soft delete)
-     */
-    public void inativar(Long id) {
-        Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
-
-        cliente.inativar();
-        clienteRepository.save(cliente);
+    public ClienteResponseDTO ativarDesativarCliente(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
+        cliente.setAtivo(!cliente.getAtivo());
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return toClienteResponseDTO(clienteSalvo);
     }
 
-    /**
-     * Buscar clientes por nome
-     */
     @Transactional(readOnly = true)
-    public List<Cliente> buscarPorNome(String nome) {
-        return clienteRepository.findByNomeContainingIgnoreCase(nome);
+    public Page<ClienteResponseDTO> buscarPorNome(String nome, Pageable pageable) {
+        return clienteRepository.findByNomeContainingIgnoreCase(nome, pageable)
+                .map(this::toClienteResponseDTO);
     }
 
-    /**
-     * Validações de negócio
-     */
-    private void validarDadosCliente(Cliente cliente) {
-        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome é obrigatório");
+    private ClienteResponseDTO toClienteResponseDTO(Cliente cliente) {
+        ClienteResponseDTO dto = new ClienteResponseDTO();
+        dto.setId(cliente.getId());
+        dto.setNome(cliente.getNome());
+        dto.setEmail(cliente.getEmail());
+        dto.setTelefone(cliente.getTelefone());
+        dto.setAtivo(cliente.getAtivo());
+
+        if (cliente.getEndereco() != null) {
+            EnderecoDTO enderecoDTO = new EnderecoDTO();
+            enderecoDTO.setCep(cliente.getEndereco().getCep());
+            enderecoDTO.setLogradouro(cliente.getEndereco().getLogradouro());
+            enderecoDTO.setNumero(cliente.getEndereco().getNumero());
+            enderecoDTO.setComplemento(cliente.getEndereco().getComplemento());
+            enderecoDTO.setBairro(cliente.getEndereco().getBairro());
+            enderecoDTO.setCidade(cliente.getEndereco().getCidade());
+            enderecoDTO.setEstado(cliente.getEndereco().getEstado());
+            dto.setEndereco(enderecoDTO);
         }
 
-        if (cliente.getEmail() == null || cliente.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email é obrigatório");
-        }
-
-        if (cliente.getNome().length() < 2) {
-            throw new IllegalArgumentException("Nome deve ter pelo menos 2 caracteres");
-        }
+        return dto;
     }
 }

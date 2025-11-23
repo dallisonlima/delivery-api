@@ -1,23 +1,26 @@
 package com.delivery_api.Projeto.Delivery.API.repository;
 
 import com.delivery_api.Projeto.Delivery.API.entity.Cliente;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    // Buscar cliente por email (método derivado)
+
     Optional<Cliente> findByEmail(String email);
 
-    // Verificar se email já existe
     boolean existsByEmail(String email);
 
-    // Buscar clientes ativos
-    List<Cliente> findByAtivoTrue();
+    Page<Cliente> findByAtivoTrue(Pageable pageable);
 
-    // Buscar clientes por nome (contendo)
-    List<Cliente> findByNomeContainingIgnoreCase(String nome);
+    Page<Cliente> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+
+    Collection<Object> findByAtivoTrue();
+
+    Collection<Object> findByNomeContainingIgnoreCase(String souza);
 }
